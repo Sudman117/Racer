@@ -143,29 +143,4 @@ extension GameScene{
         
         obstacle.run(SKAction.sequence(actionArray))
     }
-    
-    
-    func addRow (type:RowType) {
-        switch type {
-        case .SSmall:
-            let obst = addObstacle(type: .Small)
-            obst.position = CGPoint(x: self.size.width/2, y: obst.position.y)
-            addMovement(obstacle: obst)
-            addChild(obst)
-            break
-        case .SMedium:
-            let obst = addObstacle(type: .Medium)
-            obst.position = CGPoint(x: self.size.width/2, y: obst.position.y)
-            addMovement(obstacle: obst)
-            addChild(obst)
-            break
-        case . SLarge:
-            let obst = addObstacle(type: .Large)
-            obst.position = CGPoint(x: self.size.width/2, y: obst.position.y)
-            addMovement(obstacle: obst)
-            addChild(obst)
-            break
-        }
-    }
-    
 }
