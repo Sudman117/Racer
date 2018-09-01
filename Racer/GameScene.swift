@@ -1,13 +1,14 @@
 //
 //  GameScene.swift
 //  Racer
-//
-//  Created by Keegan Tountas on 7/30/18.
-//  Copyright © 2018 Keegan Tountas. All rights reserved.
+//  Authors: John Sudduth & Keegan Tountas
+//  Copyright 2018
 //
 
 import SpriteKit
+import GameplayKit
 import UIKit
+import CoreMotion
 
 enum Direction: Int{
     case None = 0
@@ -22,14 +23,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let brick1 = SKSpriteNode(imageNamed: "brick2png")
     let brick2 = SKSpriteNode(imageNamed: "brick2png")
     let biker = SKSpriteNode(imageNamed: "biker clean")
+    let motionManger = CMMotionManager()
     
+    var xAcceleration:CGFloat = 0
     var initialBikerPosition: CGPoint!
+    var obstacles = ["car"]
+    var gameTimer:Timer!
+    
     
     override func didMove(to view: SKView) {
         
         let boundary = SKSpriteNode()
         boundary.size = self.frame.size
-        boundary.physicsBody?.isDynamic = false
+        boundary.physicsBody?.isDynamic = true
         boundary.physicsBody?.friction = 1.0
         
         
@@ -43,32 +49,44 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scrollingBackground1()
         scrollingBackground2()
         bikerBuild()
-        addRow(type: RowType.SSmall)
+        gameTimer = Timer.scheduledTimer(timeInterval: 0.75, target: self, selector: #selector(addObstacles), userInfo: nil, repeats: true)
         
-    }
-    
-    func addRandomRow() {
-        let randomNumber = Int(arc4random_uniform(3))
-        
-        switch  randomNumber {
-        case 0:
-            addRow(type: RowType(rawValue: 0)!)
-            break
-        case 1:
-            addRow(type: RowType(rawValue: 1)!)
-            break
-        case 2:
-            addRow(type: RowType(rawValue: 2)!)
-            break
-        default:
-            break
-            
+        motionManger.accelerometerUpdateInterval = 0.2
+        motionManger.startAccelerometerUpdates(to: OperationQueue.current!) { (data:CMAccelerometerData?, error:Error?) in
+            if let accelerometerData = data {
+                let acceleration = accelerometerData.acceleration
+                self.xAcceleration = CGFloat(acceleration.x) * 0.75 + self.xAcceleration * 0.25
+            }
         }
     }
     
-    //new
-    
-    //old
+    @objc func addObstacles() {
+        obstacles = GKRandomSource.sharedRandom().arrayByShufflingObjects(in: obstacles) as! [String]
+        
+        let obstacle = SKSpriteNode(imageNamed: obstacles[0])
+        
+        let randomObstaclePosition = GKRandomDistribution(lowestValue: 0, highestValue: 1080)
+        let position = CGFloat(randomObstaclePosition.nextInt())
+        
+        obstacle.position = CGPoint(x: position, y: self.frame.size.height + obstacle.size.height)
+        
+        obstacle.physicsBody = SKPhysicsBody(rectangleOf: obstacle.size)
+        obstacle.physicsBody?.isDynamic = true
+        
+        obstacle.physicsBody?.categoryBitMask = CollisionBitMask.Obstacle
+        obstacle.physicsBody?.collisionBitMask = CollisionBitMask.biker
+        
+        self.addChild(obstacle)
+        
+        let animationDuration:TimeInterval = 6
+        
+        var actionArray = [SKAction]()
+        
+        actionArray.append(SKAction.move(to: CGPoint(x: position, y: -obstacle.size.height), duration: animationDuration))
+        actionArray.append(SKAction.removeFromParent())
+        
+        obstacle.run(SKAction.sequence(actionArray))
+    }
     
     var lastUpdateTimeInterval = TimeInterval()
     var lastYieldTimeInterval = TimeInterval()
@@ -78,7 +96,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         lastYieldTimeInterval += timeSinceLastUpdate
         if lastYieldTimeInterval > 2 {
             lastYieldTimeInterval = 0
-            addRandomRow()
         }
     }
     
@@ -93,12 +110,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         updateWithTimeSinceLastUpdate(timeSinceLastUpdate: timeSinceLastUpdate)
     }
-    //new
     
-    //old
-}
-func didBegin(_ contact: SKPhysicsContact) {
-    if contact.bodyA.node?.name == "BIKER"{
-        print("HIT")
+    func didBegin(_ contact: SKPhysicsContact) {
+        if contact.bodyA.node?.name == "BIKER"{
+            print("HIT")
+        }
     }
 }
