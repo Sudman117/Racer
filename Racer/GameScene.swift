@@ -18,8 +18,6 @@ enum Direction: Int{
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
-    
-    
     let brick1 = SKSpriteNode(imageNamed: "brick2png")
     let brick2 = SKSpriteNode(imageNamed: "brick2png")
     let biker = SKSpriteNode(imageNamed: "biker clean")
@@ -49,6 +47,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scrollingBackground1()
         scrollingBackground2()
         bikerBuild()
+        
         gameTimer = Timer.scheduledTimer(timeInterval: 0.75, target: self, selector: #selector(addObstacles), userInfo: nil, repeats: true)
         
         motionManger.accelerometerUpdateInterval = 0.2
@@ -68,7 +67,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let randomObstaclePosition = GKRandomDistribution(lowestValue: 0, highestValue: 1080)
         let position = CGFloat(randomObstaclePosition.nextInt())
         
-        obstacle.position = CGPoint(x: position, y: self.frame.size.height + obstacle.size.height)
+        obstacle.position = CGPoint(x: position, y: self.frame.size.height + self.frame.size.height*0.5)
         
         obstacle.physicsBody = SKPhysicsBody(rectangleOf: obstacle.size)
         obstacle.physicsBody?.isDynamic = true
@@ -78,11 +77,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         self.addChild(obstacle)
         
-        let animationDuration:TimeInterval = 6
+        let animationDuration:TimeInterval = 12
         
         var actionArray = [SKAction]()
         
-        actionArray.append(SKAction.move(to: CGPoint(x: position, y: -obstacle.size.height), duration: animationDuration))
+        actionArray.append(SKAction.moveBy(x: 0, y: -frame.size.height * 2.0, duration: animationDuration))
         actionArray.append(SKAction.removeFromParent())
         
         obstacle.run(SKAction.sequence(actionArray))

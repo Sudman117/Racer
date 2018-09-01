@@ -9,21 +9,10 @@
 import SpriteKit
 
 struct CollisionBitMask {
-    static let biker:UInt32 = 0x00
-    static let Obstacle:UInt32 = 0x01
+    static let biker:UInt32 = 0x1 << 0
+    static let Obstacle:UInt32 = 0x1 << 1
 }
 
-enum ObstacleType:Int {
-    case Small = 0
-    case Medium = 1
-    case Large = 2
-}
-
-enum RowType:Int {
-    case SSmall = 0
-    case SMedium = 1
-    case SLarge = 2
-}
 
 extension GameScene{
     
@@ -111,30 +100,6 @@ extension GameScene{
     //old
     
     
-    func addObstacle (type:ObstacleType) -> SKSpriteNode {
-        let obstacle = SKSpriteNode(color:UIColor.white, size: CGSize(width:0, height: 30))
-        obstacle.name = "OBSTACLE"
-        obstacle.physicsBody?.isDynamic = true
-        
-        switch type {
-        case .Small:
-            obstacle.size.width = self.size.width * 0.2
-            break
-        case .Medium:
-            obstacle.size.width = self.size.width * 0.35
-            break
-        case .Large:
-            obstacle.size.width = self.size.width * 0.75
-            break
-        }
-        obstacle.position = CGPoint(x:0,y:self.size.height + obstacle.size.height)
-        obstacle.physicsBody = SKPhysicsBody(rectangleOf: obstacle.size)
-        obstacle.physicsBody?.categoryBitMask = CollisionBitMask.Obstacle
-        obstacle.physicsBody?.collisionBitMask = 0
-        
-        
-        return obstacle
-    }
     func addMovement (obstacle:SKSpriteNode) {
         var actionArray = [SKAction]()
         

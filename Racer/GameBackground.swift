@@ -17,7 +17,7 @@ extension GameScene {
         brick1.size = CGSize(width: frame.size.width, height: frame.size.height)
         brick1.zPosition = -1
         
-        let b1Down = SKAction.moveBy(x: 0, y: -frame.size.height * 1.0, duration: 10.0)
+        let b1Down = SKAction.moveBy(x: 0, y: -frame.size.height * 1.0, duration: 6.0)
         let b1ResetPosition = SKAction.moveBy(x: 0, y: frame.size.height * 1.0, duration: 0.0)
         
         let b1Move = SKAction.sequence([b1Down,b1ResetPosition])
@@ -34,7 +34,7 @@ extension GameScene {
         brick2.size = CGSize(width: frame.size.width, height: frame.size.height)
         brick2.zPosition = -1
         
-        let b2Down = SKAction.moveBy(x: 0, y: -frame.size.height * 1.0, duration: 10.0)
+        let b2Down = SKAction.moveBy(x: 0, y: -frame.size.height * 1.0, duration: 6.0)
         let b2ResetPosition = SKAction.moveBy(x: 0, y: frame.size.height * 1.0, duration: 0.0)
         
         let b2Move = SKAction.sequence([b2Down,b2ResetPosition])
