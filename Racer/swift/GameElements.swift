@@ -8,24 +8,7 @@
 
 import SpriteKit
 
-struct CollisionBitMask {
-    static let biker:UInt32 = 0x00
-    static let Obstacle:UInt32 = 0x01
-}
-
-enum ObstacleType:Int {
-    case Small = 0
-    case Medium = 1
-    case Large = 2
-}
-
-enum RowType:Int {
-    case SSmall = 0
-    case SMedium = 1
-    case SLarge = 2
-}
-
-extension GameScene{
+extension GameScene {
     
     func bikerBuild () {
         
@@ -33,15 +16,12 @@ extension GameScene{
         biker.physicsBody = SKPhysicsBody(rectangleOf: biker.size)
         biker.physicsBody?.affectedByGravity = false
         biker.physicsBody?.isDynamic = true
-        biker.physicsBody?.friction = 0
-        biker.physicsBody?.restitution = 0
-        biker.physicsBody?.linearDamping = 0
-        biker.name = "BIKER"
         biker.physicsBody?.categoryBitMask = CollisionBitMask.biker
         biker.physicsBody?.collisionBitMask = 0
-        
         initialBikerPosition = biker.position
     }
+    
+    
     //new
     func moveBikerRight(){
         biker.physicsBody?.velocity = CGVector(dx: 300, dy: 0)
@@ -108,8 +88,6 @@ extension GameScene{
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         bikerStop()
     }
-    //old
-    
     
     func addObstacle (type:ObstacleType) -> SKSpriteNode {
         let obstacle = SKSpriteNode(color:UIColor.white, size: CGSize(width:0, height: 30))
@@ -129,12 +107,14 @@ extension GameScene{
         }
         obstacle.position = CGPoint(x:0,y:self.size.height + obstacle.size.height)
         obstacle.physicsBody = SKPhysicsBody(rectangleOf: obstacle.size)
-        obstacle.physicsBody?.categoryBitMask = CollisionBitMask.Obstacle
+        obstacle.physicsBody?.categoryBitMask = CollisionBitMask.obstacle
         obstacle.physicsBody?.collisionBitMask = 0
         
         
         return obstacle
     }
+    
+    
     func addMovement (obstacle:SKSpriteNode) {
         var actionArray = [SKAction]()
         
