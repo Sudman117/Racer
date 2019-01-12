@@ -208,13 +208,16 @@
 				TargetAttributes = {
 					E90B9B9C2127A2DA0005F813 = {
 						CreatedOnToolsVersion = 9.4.1;
+						LastSwiftMigration = 1010;
 					};
 					E90B9BB62127A2DD0005F813 = {
 						CreatedOnToolsVersion = 9.4.1;
+						LastSwiftMigration = 1010;
 						TestTargetID = E90B9B9C2127A2DA0005F813;
 					};
 					E90B9BC12127A2DD0005F813 = {
 						CreatedOnToolsVersion = 9.4.1;
+						LastSwiftMigration = 1010;
 						TestTargetID = E90B9B9C2127A2DA0005F813;
 					};
 				};
@@ -451,6 +454,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = J5D9YBFA6V;
 				INFOPLIST_FILE = Racer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -458,7 +462,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.suddifyCreations.Racer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -468,6 +472,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = J5D9YBFA6V;
 				INFOPLIST_FILE = Racer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -475,7 +480,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.suddifyCreations.Racer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -494,7 +499,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.suddifyCreations.RacerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Racer.app/Racer";
 			};
@@ -514,7 +519,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.suddifyCreations.RacerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Racer.app/Racer";
 			};
@@ -533,7 +538,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.suddifyCreations.RacerUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = Racer;
 			};
@@ -552,7 +557,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.suddifyCreations.RacerUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = Racer;
 			};
