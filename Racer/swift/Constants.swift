@@ -6,11 +6,11 @@
 //  Copyright © 2019 John Sudduth. All rights reserved.
 //
 
-struct CollisionBitMask {
-    static let biker  : UInt32 = 0x1 << 1
-    static let obstacle: UInt32 = 0x1 << 2
-    static let left_boder : UInt32 = 0x1 << 3
-    static let right_border : UInt32 = 0x1 << 4
+struct Categories {
+    static let biker  : UInt32          = 0x1 << 1
+    static let obstacle: UInt32         = 0x1 << 2
+    static let left_boder : UInt32      = 0x1 << 3
+    static let right_border : UInt32    = 0x1 << 4
 }
 
 enum ObstacleType:Int {
