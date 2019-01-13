@@ -27,7 +27,6 @@ extension GameScene {
         
     }
     
-    
     func scrollingBackground2 () {
         
         brick2.position = CGPoint(x: frame.size.width/2, y: frame.size.height * 1.5)

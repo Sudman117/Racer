@@ -47,8 +47,7 @@ extension GameScene{
         
         biker.run(rotateLeft)
         biker.run(steerLeft)
-        
-        
+    
     }
     
     func bikerStop(){
