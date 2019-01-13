@@ -25,8 +25,8 @@ extension GameScene {
         let rotateRight = SKAction.rotate(toAngle: -0.3, duration: 0.5)
         let steerRight = SKAction.animate(with: [bikerRight], timePerFrame: 0.1)
         
-        biker.run(rotateRight)
-        biker.run(steerRight)
+       // biker.run(rotateRight)
+        //biker.run(steerRight)
     }
     
     func moveBikerLeft(){
@@ -36,8 +36,8 @@ extension GameScene {
         let rotateLeft = SKAction.rotate(toAngle: 0.3, duration: 0.5)
         let steerLeft = SKAction.animate(with: [bikerLeft], timePerFrame: 0.1)
         
-        biker.run(rotateLeft)
-        biker.run(steerLeft)
+       // biker.run(rotateLeft)
+        //biker.run(steerLeft)
     }
     
     func bikerStop(){
@@ -48,8 +48,8 @@ extension GameScene {
         let rotateCenter = SKAction.rotate(toAngle: 0, duration: 0.4)
         let steerCenter = SKAction.animate(with: [bikerCenter], timePerFrame: 0.1)
         
-        biker.run(rotateCenter)
-        biker.run(steerCenter)
+    //    biker.run(rotateCenter)
+        //biker.run(steerCenter)
     }
     
     

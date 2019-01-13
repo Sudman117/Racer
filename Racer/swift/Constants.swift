@@ -11,6 +11,8 @@ struct Categories {
     static let obstacle: UInt32         = 0x1 << 2
     static let left_boder : UInt32      = 0x1 << 3
     static let right_border : UInt32    = 0x1 << 4
+    static let puddle : UInt32          = 0x1 << 5
+    static let car : UInt32             = 0x1 << 6
 }
 
 enum ObstacleType:Int {
