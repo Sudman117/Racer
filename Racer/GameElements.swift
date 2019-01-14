@@ -24,10 +24,10 @@ extension GameScene{
         biker.physicsBody?.usesPreciseCollisionDetection = true
     
     }
-
+    
     func moveBikerRight(){
         
-        biker.physicsBody?.velocity = CGVector(dx: 300, dy: 0)
+        biker.physicsBody?.velocity = CGVector(dx: 300 + (speedUpNumber*speedUpBiker), dy: 0)
         let bikerRight = SKTexture(imageNamed: "biker right")
         
         let rotateRight = SKAction.rotate(toAngle: -0.3, duration: 0.5)
@@ -39,7 +39,7 @@ extension GameScene{
     }
     
     func moveBikerLeft(){
-        biker.physicsBody?.velocity = CGVector(dx: -300, dy: 0)
+        biker.physicsBody?.velocity = CGVector(dx: -300 - (speedUpNumber*speedUpBiker), dy: 0)
         let bikerLeft = SKTexture(imageNamed: "biker left")
         
         let rotateLeft = SKAction.rotate(toAngle: 0.3, duration: 0.5)
