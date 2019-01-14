@@ -15,7 +15,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let brick2 = SKSpriteNode(imageNamed: "brick2png")
     let biker = SKSpriteNode(imageNamed: "biker clean")
     
-    var currentHealth:Int = 450
+    var currentHealth:Int = 10
     var healthBar = SKSpriteNode()
     var contactOnce = 0
     var xAcceleration:CGFloat = 0
@@ -43,6 +43,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var obstacleFrequency:Double = (-0.5)
     
     override func didMove(to view: SKView) {
+        self.physicsWorld.gravity = CGVector(dx: 0, dy: 0)
+        physicsWorld.contactDelegate = self
+        
         //Border definitions
         let rightBorder = SKSpriteNode(color: UIColor.clear, size: CGSize(width: 1, height: self.frame.height))
         rightBorder.position = CGPoint(x: 0, y: self.frame.height / 2)
@@ -73,11 +76,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
         //Biker definition
         biker.position = CGPoint(x: frame.size.width/2, y: frame.size.height/6)
-        biker.physicsBody = SKPhysicsBody(rectangleOf: biker.size)
-        biker.physicsBody?.categoryBitMask = Categories.biker
-        biker.physicsBody?.collisionBitMask = Categories.left_boder | Categories.right_border
+        biker.zPosition = 10
+        biker.physicsBody = SKPhysicsBody(texture: biker.texture!, size: biker.texture!.size())
         biker.physicsBody?.affectedByGravity = false
         biker.physicsBody?.isDynamic = true
+        biker.name = "BIKER"
+        biker.physicsBody?.categoryBitMask = Categories.biker
+        biker.physicsBody?.contactTestBitMask = Categories.car
+        biker.physicsBody?.collisionBitMask = 0
+        biker.physicsBody?.usesPreciseCollisionDetection = true
         addChild(biker)
         
         setup()
@@ -86,16 +93,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func didBegin(_ contact: SKPhysicsContact) {
         
         let contactMask = contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask
+        print("didBegan called")
         
-        switch contactMask {
+        switch contactMask  		 {
         case Categories.biker | Categories.car:
             print("biker-car")
             contact.bodyB.node?.removeFromParent()
             currentHealth -= 10
             if currentHealth <= 0 {
-                currentHealth = 0
-                healthBar.removeFromParent()
-                gameTimer3.invalidate()
+                let reveal = SKTransition.doorsCloseVertical(withDuration: 0.5)
+                let gameOverScene = GameOverScene(size: self.size)
+                self.view?.presentScene(gameOverScene, transition: reveal)
             }
             
             

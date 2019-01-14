@@ -9,15 +9,7 @@
 import SpriteKit
 
 extension GameScene {
-    
-    func bikerBuild () {
-        
-    }
-    
-    func wallSetup() {
-        
-    }
-    
+	
     func moveBikerRight(){
         biker.physicsBody?.velocity = CGVector(dx: 300, dy: 0)
         let bikerRight = SKTexture(imageNamed: "biker right")
@@ -71,32 +63,6 @@ extension GameScene {
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         bikerStop()
     }
-    
-    func addObstacle (type:ObstacleType) -> SKSpriteNode {
-        let obstacle = SKSpriteNode(color:UIColor.white, size: CGSize(width:0, height: 30))
-        obstacle.name = "OBSTACLE"
-        obstacle.physicsBody?.isDynamic = true
-        
-        switch type {
-        case .Small:
-            obstacle.size.width = self.size.width * 0.2
-            break
-        case .Medium:
-            obstacle.size.width = self.size.width * 0.35
-            break
-        case .Large:
-            obstacle.size.width = self.size.width * 0.75
-            break
-        }
-        obstacle.position = CGPoint(x:0,y:self.size.height + obstacle.size.height)
-        obstacle.physicsBody = SKPhysicsBody(rectangleOf: obstacle.size)
-        obstacle.physicsBody?.categoryBitMask = Categories.obstacle
-        obstacle.physicsBody?.collisionBitMask = 0
-        
-        
-        return obstacle
-    }
-    
     
     func addMovement (obstacle:SKSpriteNode) {
         var actionArray = [SKAction]()
