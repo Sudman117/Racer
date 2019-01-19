@@ -22,6 +22,7 @@
 		E9FA36A121E157EF002CD8C0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9FA36A021E157EF002CD8C0 /* Constants.swift */; };
 		E9FA36A621EC0CCD002CD8C0 /* MenuScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9FA36A521EC0CCD002CD8C0 /* MenuScene.swift */; };
 		E9FA36A821EC1938002CD8C0 /* GameOverScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9FA36A721EC1938002CD8C0 /* GameOverScene.swift */; };
+		E9FA36B021F3CC23002CD8C0 /* speed.sks in Resources */ = {isa = PBXBuildFile; fileRef = E9FA36AF21F3CC23002CD8C0 /* speed.sks */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 		E9FA36A021E157EF002CD8C0 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		E9FA36A521EC0CCD002CD8C0 /* MenuScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuScene.swift; sourceTree = "<group>"; };
 		E9FA36A721EC1938002CD8C0 /* GameOverScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverScene.swift; sourceTree = "<group>"; };
+		E9FA36AF21F3CC23002CD8C0 /* speed.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = speed.sks; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -144,12 +146,12 @@
 			isa = PBXGroup;
 			children = (
 				E9FA36A521EC0CCD002CD8C0 /* MenuScene.swift */,
-				E90B9BA62127A2DA0005F813 /* GameScene.swift */,
 				E9FA36A721EC1938002CD8C0 /* GameOverScene.swift */,
+				E90B9BA62127A2DA0005F813 /* GameScene.swift */,
 				E90B9BD4212B896A0005F813 /* GameBackground.swift */,
 				E90B9BD6212B89860005F813 /* GameElements.swift */,
-				E9FA36A021E157EF002CD8C0 /* Constants.swift */,
 				E90B9BA82127A2DA0005F813 /* GameViewController.swift */,
+				E9FA36A021E157EF002CD8C0 /* Constants.swift */,
 				E90B9BA02127A2DA0005F813 /* AppDelegate.swift */,
 				E90B9BAA2127A2DA0005F813 /* Main.storyboard */,
 			);
@@ -159,6 +161,7 @@
 		E9FA36A421E15A94002CD8C0 /* sks */ = {
 			isa = PBXGroup;
 			children = (
+				E9FA36AF21F3CC23002CD8C0 /* speed.sks */,
 				E90B9BA22127A2DA0005F813 /* GameScene.sks */,
 				E90B9BA42127A2DA0005F813 /* Actions.sks */,
 			);
@@ -273,6 +276,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E90B9BAC2127A2DA0005F813 /* Main.storyboard in Resources */,
+				E9FA36B021F3CC23002CD8C0 /* speed.sks in Resources */,
 				E90B9BA32127A2DA0005F813 /* GameScene.sks in Resources */,
 				E90B9BAE2127A2DD0005F813 /* Assets.xcassets in Resources */,
 				E90B9BB12127A2DD0005F813 /* LaunchScreen.storyboard in Resources */,

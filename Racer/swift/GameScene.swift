@@ -14,6 +14,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let brick1 = SKSpriteNode(imageNamed: "brick2png")
     let brick2 = SKSpriteNode(imageNamed: "brick2png")
     let biker = SKSpriteNode(imageNamed: "biker clean")
+    let speedEmitter = SKEmitterNode(fileNamed: "speed")!
     
     var currentHealth:Int = 10
     var healthBar = SKSpriteNode()
@@ -67,6 +68,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         leftBorder.physicsBody?.affectedByGravity = false
         addChild(leftBorder)
         
+        //Health definition
         healthBar.size = CGSize(width: currentHealth, height: 40)
         healthBar.position = CGPoint(x: frame.size.width * 0.75, y: frame.size.height * 0.95)
         healthBar.zPosition = 5
@@ -87,6 +89,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         biker.physicsBody?.usesPreciseCollisionDetection = true
         addChild(biker)
         
+        addChild(speedEmitter)
+        
         setup()
     }
     
@@ -102,7 +106,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             currentHealth -= 10
             if currentHealth <= 0 {
                 let reveal = SKTransition.doorsCloseVertical(withDuration: 0.5)
-                let gameOverScene = GameOverScene(size: self.size)
+                let gameOverScene = GameOverScene(size: CGSize(width: 1080, height: 1920))
                 self.view?.presentScene(gameOverScene, transition: reveal)
             }
             
@@ -120,6 +124,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             contact.bodyB.node?.removeFromParent()
             pickUpNumber += 1
+            speedEmitter.particleBirthRate += 25
             if activeArray.count < 5 {
                 activeArray.append("Speed")
             } else{
@@ -153,7 +158,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     override func update(_ currentTime: CFTimeInterval) {
         showRoadStrip()
-        
+        speedEmitter.position = CGPoint(x: biker.position.x, y: biker.position.y - 10)
     }
     
     @objc func setup() {

@@ -12,12 +12,9 @@ class MenuScene: SKScene {
     let title = SKLabelNode()
     let playButton = SKLabelNode()
     
-    
     override init(size: CGSize) {
         super.init(size: size)
-        
         backgroundColor = SKColor.black
-        
         title.fontColor = SKColor.red
         title.fontSize = 100
         title.text = "RACER"
@@ -41,7 +38,6 @@ class MenuScene: SKScene {
         let touchLocation = touch!.location(in: self)
         
         if playButton.contains(touchLocation) {
-            
             let reveal = SKTransition.doorsOpenVertical(withDuration: 0.5)
             let gameScene = GameScene(size: CGSize(width: 1080, height: 1920))
             self.view?.presentScene(gameScene, transition: reveal)
