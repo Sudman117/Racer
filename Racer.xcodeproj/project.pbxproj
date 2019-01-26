@@ -24,6 +24,8 @@
 		E90B9BBC2127A2DD0005F813 /* RacerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90B9BBB2127A2DD0005F813 /* RacerTests.swift */; };
 		E90B9BC72127A2DD0005F813 /* RacerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90B9BC62127A2DD0005F813 /* RacerUITests.swift */; };
 		E90B9BD7212B89860005F813 /* GameElements.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90B9BD6212B89860005F813 /* GameElements.swift */; };
+		E9FA36BA21FCF02D002CD8C0 /* MenuScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9FA36B921FCF02D002CD8C0 /* MenuScene.swift */; };
+		E9FA36BC21FCF109002CD8C0 /* GameOverScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9FA36BB21FCF109002CD8C0 /* GameOverScene.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,6 +69,8 @@
 		E90B9BC62127A2DD0005F813 /* RacerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RacerUITests.swift; sourceTree = "<group>"; };
 		E90B9BC82127A2DD0005F813 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E90B9BD6212B89860005F813 /* GameElements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameElements.swift; sourceTree = "<group>"; };
+		E9FA36B921FCF02D002CD8C0 /* MenuScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuScene.swift; sourceTree = "<group>"; };
+		E9FA36BB21FCF109002CD8C0 /* GameOverScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverScene.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -173,8 +177,10 @@
 			children = (
 				E90B9BA62127A2DA0005F813 /* GameScene.swift */,
 				E90B9BD6212B89860005F813 /* GameElements.swift */,
-				E90B9BA02127A2DA0005F813 /* AppDelegate.swift */,
 				E90B9BA82127A2DA0005F813 /* GameViewController.swift */,
+				E90B9BA02127A2DA0005F813 /* AppDelegate.swift */,
+				E9FA36B921FCF02D002CD8C0 /* MenuScene.swift */,
+				E9FA36BB21FCF109002CD8C0 /* GameOverScene.swift */,
 			);
 			path = swift;
 			sourceTree = "<group>";
@@ -323,7 +329,9 @@
 			files = (
 				E90B9BD7212B89860005F813 /* GameElements.swift in Sources */,
 				E90B9BA72127A2DA0005F813 /* GameScene.swift in Sources */,
+				E9FA36BA21FCF02D002CD8C0 /* MenuScene.swift in Sources */,
 				E90B9BA92127A2DA0005F813 /* GameViewController.swift in Sources */,
+				E9FA36BC21FCF109002CD8C0 /* GameOverScene.swift in Sources */,
 				E90B9BA12127A2DA0005F813 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

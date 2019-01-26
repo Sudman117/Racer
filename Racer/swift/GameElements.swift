@@ -23,9 +23,9 @@ extension GameScene{
         biker.physicsBody?.collisionBitMask = 0
         biker.physicsBody?.usesPreciseCollisionDetection = true
         //new
-        //biker.lightingBitMask = 1
-        //biker.shadowCastBitMask = 0
-        //biker.shadowedBitMask = 1
+        biker.lightingBitMask = 1
+        biker.shadowCastBitMask = 0
+        biker.shadowedBitMask = 1
         //old
     }
     

@@ -48,14 +48,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let rect5 = SKShapeNode(rectOf: CGSize(width: 90, height: 90))
     let rect6 = SKShapeNode(rectOf: CGSize(width: 200, height: 200))
     
-    var gameTimer:Timer!
-    var gameTimer2:Timer!
-    var gameTimer4:Timer!
-    var gameTimer6:Timer!
-    var gameTimer7:Timer!
-    var gameTimer8:Timer!
     var gameOver = false
-    
+
+    //Categories
     let bikerCategory:UInt32 = 1 << 1
     let carCategory:UInt32 = 1 << 2
     let borderCategory:UInt32 = 1 << 3
@@ -344,14 +339,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         physicsWorld.contactDelegate = self
         
         //new
-        //let lightSource = SKLightNode()
-        //lightSource.categoryBitMask = 1
-        //lightSource.falloff = 0
-        //lightSource.ambientColor = SKColor(displayP3Red: 0.3, green: 0.3, blue: 0.3, alpha: 0.8)
-        //lightSource.lightColor = SKColor(displayP3Red: 0.8, green: 0.8, blue: 0.8, alpha: 0.8)
-        //lightSource.shadowColor = SKColor(displayP3Red: 0, green: 0, blue: 0, alpha: 0.8)
-        //lightSource.position = CGPoint(x: frame.size.width/2, y: frame.size.height*0.2)
-        //addChild(lightSource)
+        let lightSource = SKLightNode()
+        lightSource.categoryBitMask = 1
+        lightSource.falloff = 0
+        lightSource.ambientColor = SKColor(displayP3Red: 0.3, green: 0.3, blue: 0.3, alpha: 0.8)
+        lightSource.lightColor = SKColor(displayP3Red: 0.8, green: 0.8, blue: 0.8, alpha: 0.8)
+        lightSource.shadowColor = SKColor(displayP3Red: 0, green: 0, blue: 0, alpha: 0.8)
+        lightSource.position = CGPoint(x: frame.size.width/2, y: frame.size.height*0.2)
+        addChild(lightSource)
         //old
         
         let rightBorder = SKSpriteNode(color: UIColor.red, size: CGSize(width: 100, height: self.frame.height))
@@ -432,12 +427,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(healthBar)
         addChild(healthLabel)
         
-        gameTimer = Timer.scheduledTimer(timeInterval: 10, target: self, selector: #selector(addObstacleCar), userInfo: nil, repeats: true)
-        gameTimer2 = Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(addPuddle), userInfo: nil, repeats: true)
-        gameTimer4 = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(addPowerUps), userInfo: nil, repeats: true)
-        gameTimer6 = Timer.scheduledTimer(timeInterval: 1 - (pickUpNumber*obstacleFrequency), target: self, selector: #selector(createRoadStrip), userInfo: nil, repeats: true)
-        gameTimer7 = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(runPowerUpCombinations), userInfo: nil, repeats: true)
-        gameTimer8 = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(updateArrayImage), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 10, target: self, selector: #selector(addObstacleCar), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(addPuddle), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(addPowerUps), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 1 - (pickUpNumber*obstacleFrequency), target: self, selector: #selector(createRoadStrip), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(runPowerUpCombinations), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(updateArrayImage), userInfo: nil, repeats: true)
         
 }
 
@@ -568,6 +563,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 currentHealth = 0
                 healthBar.removeFromParent()
                 healthLabel.removeFromParent()
+                if currentHealth <= 0 {
+                    gameOver = true
+                    let reveal = SKTransition.doorsCloseVertical(withDuration: 0.5)
+                    let gameOverScene = GameOverScene(size: CGSize(width: 1080, height: 1920))
+                    self.view?.presentScene(gameOverScene, transition: reveal)
+                }
             }
             
         case bikerCategory | puddleCategory:
