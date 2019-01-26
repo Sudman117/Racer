@@ -130,12 +130,8 @@
 		E90B9B9F2127A2DA0005F813 /* Racer */ = {
 			isa = PBXGroup;
 			children = (
-				E90B9BA02127A2DA0005F813 /* AppDelegate.swift */,
-				E90B9BA22127A2DA0005F813 /* GameScene.sks */,
-				E90B9BA42127A2DA0005F813 /* Actions.sks */,
-				E90B9BA62127A2DA0005F813 /* GameScene.swift */,
-				E90B9BD6212B89860005F813 /* GameElements.swift */,
-				E90B9BA82127A2DA0005F813 /* GameViewController.swift */,
+				E9FA36B521FCEABB002CD8C0 /* sks */,
+				E9FA36B621FCEACF002CD8C0 /* swift */,
 				E90B9BAA2127A2DA0005F813 /* Main.storyboard */,
 				E90B9BAD2127A2DD0005F813 /* Assets.xcassets */,
 				E90B9BAF2127A2DD0005F813 /* LaunchScreen.storyboard */,
@@ -161,6 +157,26 @@
 				E90B9BC82127A2DD0005F813 /* Info.plist */,
 			);
 			path = RacerUITests;
+			sourceTree = "<group>";
+		};
+		E9FA36B521FCEABB002CD8C0 /* sks */ = {
+			isa = PBXGroup;
+			children = (
+				E90B9BA42127A2DA0005F813 /* Actions.sks */,
+				E90B9BA22127A2DA0005F813 /* GameScene.sks */,
+			);
+			path = sks;
+			sourceTree = "<group>";
+		};
+		E9FA36B621FCEACF002CD8C0 /* swift */ = {
+			isa = PBXGroup;
+			children = (
+				E90B9BA62127A2DA0005F813 /* GameScene.swift */,
+				E90B9BD6212B89860005F813 /* GameElements.swift */,
+				E90B9BA02127A2DA0005F813 /* AppDelegate.swift */,
+				E90B9BA82127A2DA0005F813 /* GameViewController.swift */,
+			);
+			path = swift;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
