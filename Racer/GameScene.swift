@@ -3,7 +3,6 @@
 //  Racer
 //  Authors: John Sudduth & Keegan Tountas
 //  Copyright 2018
-// shield, gun, roar
 
 import SpriteKit
 import GameplayKit
@@ -13,6 +12,7 @@ import CoreMotion
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     let biker = SKSpriteNode(imageNamed: "biker clean")
+    let shield = SKShapeNode(circleOfRadius: 200)
     
     var currentHealth:Int = 500
     
@@ -26,18 +26,34 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var healUpNumber:Int = 0
     
     var pickUpNumber:Double = 0
-    var speedUpGame:Double = (5)
+    var speedUpGame:Double = 5
     var obstacleFrequency:Double = (0.5)
+    
+    var shieldOn:Bool = false
     
     var healthBar = SKSpriteNode()
     var healthLabel = SKLabelNode()
+    var cameraNode = SKCameraNode()
+    let speedParticlesRight = SKEmitterNode(fileNamed: "Speed Right.sks")
+    let speedParticles = SKEmitterNode(fileNamed: "Speed.sks")
+    let resistParticlesRight = SKEmitterNode(fileNamed: "Resist Right.sks")
+    let resistParticles = SKEmitterNode(fileNamed: "Resist.sks")
+    let healParticlesRight = SKEmitterNode(fileNamed: "Heal Right.sks")
+    let healParticles = SKEmitterNode(fileNamed: "Heal.sks")
+    
+    let rect1 = SKShapeNode(rectOf: CGSize(width: 90, height: 90))
+    let rect2 = SKShapeNode(rectOf: CGSize(width: 90, height: 90))
+    let rect3 = SKShapeNode(rectOf: CGSize(width: 90, height: 90))
+    let rect4 = SKShapeNode(rectOf: CGSize(width: 90, height: 90))
+    let rect5 = SKShapeNode(rectOf: CGSize(width: 90, height: 90))
+    let rect6 = SKShapeNode(rectOf: CGSize(width: 200, height: 200))
     
     var gameTimer:Timer!
     var gameTimer2:Timer!
-    var gameTimer3:Timer!
     var gameTimer4:Timer!
-    var gameTimer5:Timer!
     var gameTimer6:Timer!
+    var gameTimer7:Timer!
+    var gameTimer8:Timer!
     var gameOver = false
     
     let bikerCategory:UInt32 = 1 << 1
@@ -47,6 +63,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let speedCategory:UInt32 = 1 << 5
     let resistCategory:UInt32 = 1 << 6
     let healCategory:UInt32 = 1 << 7
+    let shieldCategory:UInt32 = 1 << 8
     
     var activeArray = [String]()
     
@@ -56,15 +73,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         resistUpNumber = activeArray.filter{ $0 == "Resist"}.count
         healUpNumber = activeArray.filter{ $0 == "Heal"}.count
     }
-
-    @objc func powerUpUpdates() {
-        if currentHealth < 500 {
-        currentHealth += (bikerHealing*healUpNumber)
-        }
-        readyArray()
-    }
-    
-    //power-ups start
     
     @objc func addSpeedUp() {
         print("power-up speed")
@@ -145,6 +153,48 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    func healEmitter() {
+        let delay1 = SKAction.wait(forDuration: 1.5)
+        let remove1 = SKAction.removeFromParent()
+        let sequence1 = SKAction.sequence([delay1,remove1])
+        addChild(healParticles!)
+        healParticles?.run(sequence1)
+        
+        let delay2 = SKAction.wait(forDuration: 1.5)
+        let remove2 = SKAction.removeFromParent()
+        let sequence2 = SKAction.sequence([delay2,remove2])
+        addChild(healParticlesRight!)
+        healParticlesRight?.run(sequence2)
+    }
+    
+    func resistEmitter() {
+        let delay1 = SKAction.wait(forDuration: 1.5)
+        let remove1 = SKAction.removeFromParent()
+        let sequence1 = SKAction.sequence([delay1,remove1])
+        addChild(resistParticles!)
+        resistParticles?.run(sequence1)
+        
+        let delay2 = SKAction.wait(forDuration: 1.5)
+        let remove2 = SKAction.removeFromParent()
+        let sequence2 = SKAction.sequence([delay2,remove2])
+        addChild(resistParticlesRight!)
+        resistParticlesRight?.run(sequence2)
+    }
+    
+    func speedEmitter() {
+        let delay1 = SKAction.wait(forDuration: 1.5)
+        let remove1 = SKAction.removeFromParent()
+        let sequence1 = SKAction.sequence([delay1,remove1])
+        addChild(speedParticles!)
+        speedParticles?.run(sequence1)
+        
+        let delay2 = SKAction.wait(forDuration: 1.5)
+        let remove2 = SKAction.removeFromParent()
+        let sequence2 = SKAction.sequence([delay2,remove2])
+        addChild(speedParticlesRight!)
+        speedParticlesRight?.run(sequence2)
+    }
+    
     @objc func addPowerUps() {
         
         var powerUpArray = [addHealUp,addSpeedUp,addResistanceUp]
@@ -153,15 +203,220 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
      
     }
     
-    //power-ups end
+    func powerUpCombinations() {
+        if speedUpNumber == 5 {
+            rect6.isHidden = false
+        } else if healUpNumber == 5 {
+            rect6.isHidden = false
+        } else if resistUpNumber == 5 {
+            makeShield()
+            rect6.isHidden = false
+        }
+        else if speedUpNumber == 4 && resistUpNumber == 1{
+            rect6.isHidden = false
+        } else if speedUpNumber == 4 && healUpNumber == 1{
+            rect6.isHidden = false
+        } else if speedUpNumber == 3 && resistUpNumber == 2{
+            rect6.isHidden = false
+        } else if speedUpNumber == 3 && healUpNumber == 2{
+            rect6.isHidden = false
+        } else if speedUpNumber == 3 && resistUpNumber == 1 && healUpNumber == 1 {
+            rect6.isHidden = false
+        } else if speedUpNumber == 2 && resistUpNumber == 3 {
+            rect6.isHidden = false
+        } else if speedUpNumber == 2 && resistUpNumber == 2 && healUpNumber == 1 {
+            rect6.isHidden = false
+        } else if speedUpNumber == 2 && resistUpNumber == 1 && healUpNumber == 2 {
+            rect6.isHidden = false
+        }else if speedUpNumber == 2 && healUpNumber == 3 {
+            rect6.isHidden = false
+        } else if speedUpNumber == 1 && resistUpNumber == 4{
+            rect6.isHidden = false
+        } else if speedUpNumber == 1 && resistUpNumber == 3 && healUpNumber == 1 {
+            rect6.isHidden = false
+        } else if speedUpNumber == 1 && resistUpNumber == 2 && healUpNumber == 2 {
+            rect6.isHidden = false
+        } else if speedUpNumber == 1 && resistUpNumber == 1 && healUpNumber == 3 {
+            rect6.isHidden = false
+        } else if speedUpNumber == 1 && healUpNumber == 4 {
+            rect6.isHidden = false
+        } else if healUpNumber == 2 && resistUpNumber == 3 {
+            rect6.isHidden = false
+        } else if healUpNumber == 3 && resistUpNumber == 2 {
+            rect6.isHidden = false
+        } else if healUpNumber == 4 && resistUpNumber == 1 {
+            rect6.isHidden = false
+        } else if resistUpNumber == 4 && healUpNumber == 1 {
+            rect6.isHidden = false
+        } else {
+            rect6.isHidden = true
+        }
+    }
+    
+    @objc func runPowerUpCombinations() {
+        powerUpCombinations()
+    }
+
+    @objc func updateArrayImage() {
+        
+        if activeArray.count >= 1 {
+            rect1.isHidden = false
+            if activeArray[0] == "Speed" {
+                rect1.fillColor = .yellow
+            } else if activeArray [0] == "Resist" {
+                rect1.fillColor = .blue
+            } else if activeArray [0] == "Heal" {
+                rect1.fillColor = .green
+            } else {
+                return
+            }
+        } else {
+            rect1.isHidden = true
+        }
+        
+        
+        if activeArray.count >= 2 {
+            rect2.isHidden = false
+            if activeArray[1] == "Speed" {
+                rect2.fillColor = .yellow
+            } else if activeArray [1] == "Resist" {
+                rect2.fillColor = .blue
+            } else if activeArray [1] == "Heal" {
+                rect2.fillColor = .green
+            } else {
+                return
+            }
+        } else {
+            rect2.isHidden = true
+        }
+        
+        
+        if activeArray.count >= 3 {
+            rect3.isHidden = false
+            if activeArray[2] == "Speed" {
+                rect3.fillColor = .yellow
+            } else if activeArray [2] == "Resist" {
+                rect3.fillColor = .blue
+            } else if activeArray [2] == "Heal" {
+                rect3.fillColor = .green
+            } else {
+                return
+            }
+        } else {
+            rect3.isHidden = true
+        }
+        
+        if activeArray.count >= 4 {
+            rect4.isHidden = false
+            if activeArray[3] == "Speed" {
+                rect4.fillColor = .yellow
+            } else if activeArray [3] == "Resist" {
+                rect4.fillColor = .blue
+            } else if activeArray [3] == "Heal" {
+                rect4.fillColor = .green
+            } else {
+                return
+            }
+        } else {
+            rect4.isHidden = true
+        }
+        
+        if activeArray.count == 5 {
+            rect5.isHidden = false
+            if activeArray[4] == "Speed" {
+                rect5.fillColor = .yellow
+            } else if activeArray [4] == "Resist" {
+                rect5.fillColor = .blue
+            } else if activeArray [4] == "Heal" {
+                rect5.fillColor = .green
+            } else {
+                return
+            }
+        } else {
+            rect5.isHidden = true
+        }
+        
+    }
     
     override func didMove(to view: SKView) {
         
         self.physicsWorld.gravity = CGVector(dx: 0, dy: 0)
         physicsWorld.contactDelegate = self
         
+        //new
+        //let lightSource = SKLightNode()
+        //lightSource.categoryBitMask = 1
+        //lightSource.falloff = 0
+        //lightSource.ambientColor = SKColor(displayP3Red: 0.3, green: 0.3, blue: 0.3, alpha: 0.8)
+        //lightSource.lightColor = SKColor(displayP3Red: 0.8, green: 0.8, blue: 0.8, alpha: 0.8)
+        //lightSource.shadowColor = SKColor(displayP3Red: 0, green: 0, blue: 0, alpha: 0.8)
+        //lightSource.position = CGPoint(x: frame.size.width/2, y: frame.size.height*0.2)
+        //addChild(lightSource)
+        //old
+        
+        let rightBorder = SKSpriteNode(color: UIColor.red, size: CGSize(width: 100, height: self.frame.height))
+        rightBorder.position = CGPoint(x: -frame.size.width, y: self.frame.height / 2)
+        rightBorder.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: rightBorder.size.width, height: rightBorder.size.height))
+        rightBorder.physicsBody?.restitution = 0
+        rightBorder.physicsBody?.categoryBitMask = borderCategory
+        rightBorder.physicsBody?.isDynamic = false
+        rightBorder.physicsBody?.friction = 1
+        rightBorder.physicsBody?.affectedByGravity = false
+        addChild(rightBorder)
+        
+        let leftBorder = SKSpriteNode(color: UIColor.red, size: CGSize(width: 100, height: self.frame.height))
+        leftBorder.position = CGPoint(x: frame.size.width*2, y: self.frame.height / 2)
+        leftBorder.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: leftBorder.size.width, height: leftBorder.size.height))
+        leftBorder.physicsBody?.restitution = 0
+        leftBorder.physicsBody?.categoryBitMask = borderCategory
+        leftBorder.physicsBody?.isDynamic = false
+        leftBorder.physicsBody?.friction = 1
+        leftBorder.physicsBody?.affectedByGravity = false
+        addChild(leftBorder)
+        
+        camera = cameraNode
+        cameraNode.position.x = frame.size.width/2
+        cameraNode.position.y = frame.size.height/2
+        addChild(cameraNode)
+        
         addChild(biker)
         bikerBuild()
+        
+        rect1.zPosition = 5
+        rect1.position = CGPoint(x: frame.size.width * 0.585, y: frame.size.height * 0.935)
+        rect1.strokeColor = .black
+        rect1.isHidden = true
+        addChild(rect1)
+        
+        rect2.zPosition = 5
+        rect2.position = CGPoint(x: frame.size.width * 0.67, y: frame.size.height * 0.935)
+        rect2.strokeColor = .black
+        rect2.isHidden = true
+        addChild(rect2)
+        
+        rect3.zPosition = 5
+        rect3.position = CGPoint(x: frame.size.width * 0.755, y: frame.size.height * 0.935)
+        rect3.strokeColor = .black
+        rect3.isHidden = true
+        addChild(rect3)
+        
+        rect4.zPosition = 5
+        rect4.position = CGPoint(x: frame.size.width * 0.84, y: frame.size.height * 0.935)
+        rect4.strokeColor = .black
+        rect4.isHidden = true
+        addChild(rect4)
+        
+        rect5.zPosition = 5
+        rect5.position = CGPoint(x: frame.size.width * 0.925, y: frame.size.height * 0.935)
+        rect5.strokeColor = .black
+        rect5.isHidden = true
+        addChild(rect5)
+        
+        rect6.zPosition = 5
+        rect6.position = CGPoint(x: frame.size.width * 0.093, y: frame.size.height * 0.95)
+        rect6.fillColor = .orange
+        rect6.isHidden = true
+        addChild(rect6)
         
         healthLabel.color = .white
         healthLabel.position = CGPoint(x: frame.size.width * 0.68, y: frame.size.height * 0.962)
@@ -177,16 +432,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(healthBar)
         addChild(healthLabel)
         
- 
-        gameTimer = Timer.scheduledTimer(timeInterval: 20, target: self, selector: #selector(addObstacleCar), userInfo: nil, repeats: true)
-        gameTimer2 = Timer.scheduledTimer(timeInterval: 25, target: self, selector: #selector(addPuddle), userInfo: nil, repeats: true)
-        gameTimer3 = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(healthProgress), userInfo: nil, repeats: true)
-        gameTimer4 = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(addPowerUps), userInfo: nil, repeats: true)
-        gameTimer5 = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(powerUpUpdates), userInfo: nil, repeats: true)
+        gameTimer = Timer.scheduledTimer(timeInterval: 10, target: self, selector: #selector(addObstacleCar), userInfo: nil, repeats: true)
+        gameTimer2 = Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(addPuddle), userInfo: nil, repeats: true)
+        gameTimer4 = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(addPowerUps), userInfo: nil, repeats: true)
         gameTimer6 = Timer.scheduledTimer(timeInterval: 1 - (pickUpNumber*obstacleFrequency), target: self, selector: #selector(createRoadStrip), userInfo: nil, repeats: true)
+        gameTimer7 = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(runPowerUpCombinations), userInfo: nil, repeats: true)
+        gameTimer8 = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(updateArrayImage), userInfo: nil, repeats: true)
+        
 }
-    
-    //cars start
+
     @objc func addObstacleCar() {
         print("obstaclecar")
         let obstacleCar = SKSpriteNode(imageNamed: "car")
@@ -211,10 +465,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             obstacleCar.removeFromParent()
         }
     }
-    
-    //cars end
-    
-    //puddles start
     
     @objc func addPuddle() {
         print("puddle")
@@ -246,12 +496,42 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             puddle.removeFromParent()
         }
     }
-    //puddles end
     
+    func shieldBuild(){
+        print("shield")
+        shield.strokeColor = .blue
+        shield.lineWidth = 2
+        shield.glowWidth = 2
+        shield.zPosition = 6
+        shield.position = (CGPoint(x: biker.position.x, y: biker.position.y))
+        shield.physicsBody = SKPhysicsBody(circleOfRadius: 200)
+        shield.physicsBody?.isDynamic = true
+        shield.physicsBody?.categoryBitMask = shieldCategory
+        shield.physicsBody?.contactTestBitMask = carCategory
+        shield.physicsBody?.collisionBitMask = 0
+    
+        self.addChild(shield)
+    }
+    
+    func makeShield() {
+        
+        if shieldOn == false {
+            let delay = SKAction.wait(forDuration: 5)
+            let on = SKAction.run({self.shieldBuild()})
+            let sequence = SKAction.sequence([delay, on])
+            run(sequence)
+            shieldOn = true
+        }else{
+            let follow = SKAction.move(to: CGPoint(x: biker.position.x, y: biker.position.y), duration: 0.1)
+            let chase = SKAction.repeatForever(follow)
+            shield.run(chase)
+        }
+    }
+        
     @objc func createRoadStrip() {
         let strip = SKShapeNode(rectOf: CGSize(width: 10, height: 40))
-        strip.fillColor = SKColor.white
-        strip.strokeColor = SKColor.white
+        strip.fillColor = SKColor.black
+        strip.strokeColor = SKColor.black
         strip.alpha = 0.4
         strip.name = "road strip"
         strip.position.x = frame.width / 2
@@ -267,17 +547,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    //health begin
     func healthAnimation() {
         let removeHealth = SKAction.resize(toWidth: CGFloat(currentHealth), duration: 0.1)
         healthBar.run(removeHealth)
         healthLabel.text = "Health: \((currentHealth)*100/500)"
+        
         }
-    @objc func healthProgress() {
-        healthAnimation()
-    }
-    
-    //health end
     
     func didBegin(_ contact: SKPhysicsContact) {
         
@@ -285,16 +560,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         switch contactMask {
         case bikerCategory | carCategory:
-            print("biker-car")
+            
             contact.bodyB.node?.removeFromParent()
             currentHealth -= (10 - (resistUpNumber*bikerResistance))
+            print("biker-car")
             if currentHealth <= 0 {
                 currentHealth = 0
                 healthBar.removeFromParent()
                 healthLabel.removeFromParent()
-                gameTimer3.invalidate()
             }
-            
             
         case bikerCategory | puddleCategory:
 
@@ -311,6 +585,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             pickUpNumber += 1
             if activeArray.count < 5 {
                 activeArray.append("Speed")
+                speedEmitter()
             } else{
                 return
             }
@@ -321,6 +596,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             pickUpNumber += 1
             if activeArray.count < 5{
                 activeArray.append("Resist")
+                resistEmitter()
             } else{
                 return
             }
@@ -328,12 +604,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         case bikerCategory | healCategory:
 
             contact.bodyB.node?.removeFromParent()
+            healEmitter()
             pickUpNumber += 1
             if activeArray.count < 5{
                 activeArray.append("Heal")
+                healEmitter()
             } else {
                 return
             }
+            
+        case shieldCategory | carCategory:
+            
+            contact.bodyA.node?.removeFromParent()
+            contact.bodyB.node?.removeFromParent()
+            
+            shieldOn = false
+            
+        case borderCategory | bikerCategory:
+            
+            return
             
         default:
             return
@@ -341,6 +630,32 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func update(_ currentTime: TimeInterval){
+        healthLabel.position.x = biker.position.x + frame.size.width*(9/50)
+        healthBar.position.x = biker.position.x + frame.size.width/4
+        rect1.position.x = biker.position.x + frame.size.width * 0.085
+        rect2.position.x = biker.position.x + frame.size.width * 0.17
+        rect3.position.x = biker.position.x + frame.size.width * 0.255
+        rect4.position.x = biker.position.x + frame.size.width * 0.34
+        rect5.position.x = biker.position.x + frame.size.width * 0.425
+        rect6.position.x = biker.position.x - frame.size.width * 0.407
+        cameraNode.position.x = biker.position.x
+        speedParticlesRight?.position.x = biker.position.x + frame.size.width/2
+        speedParticlesRight?.position.y = frame.size.height/2
+        speedParticles?.position.x = biker.position.x - frame.size.width/2
+        speedParticles?.position.y = frame.size.height/2
+        resistParticlesRight?.position.x = biker.position.x + frame.size.width/2
+        resistParticlesRight?.position.y = frame.size.height/2
+        resistParticles?.position.x = biker.position.x - frame.size.width/2
+        resistParticles?.position.y = frame.size.height/2
+        healParticlesRight?.position.x = biker.position.x + frame.size.width/2
+        healParticlesRight?.position.y = frame.size.height/2
+        healParticles?.position.x = biker.position.x - frame.size.width/2
+        healParticles?.position.y = frame.size.height/2
+        healthAnimation()
+        if currentHealth < 500 {
+            currentHealth += (bikerHealing*healUpNumber)
+        }
+        readyArray()
         return
     }
 

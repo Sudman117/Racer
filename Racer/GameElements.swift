@@ -10,7 +10,7 @@ import SpriteKit
 
 extension GameScene{
     
-    func bikerBuild () {
+    func bikerBuild() {
         
         biker.position = CGPoint(x: frame.size.width/2, y: frame.size.height/6)
         biker.zPosition = 10
@@ -22,7 +22,11 @@ extension GameScene{
         biker.physicsBody?.contactTestBitMask = carCategory
         biker.physicsBody?.collisionBitMask = 0
         biker.physicsBody?.usesPreciseCollisionDetection = true
-    
+        //new
+        //biker.lightingBitMask = 1
+        //biker.shadowCastBitMask = 0
+        //biker.shadowedBitMask = 1
+        //old
     }
     
     func moveBikerRight(){
@@ -68,11 +72,10 @@ extension GameScene{
         
         for t in touches{
             let location = t.location(in: self)
-            let box = CGRect(x: 0, y: 0, width: frame.size.width/2, height: frame.size.height)
-            if box.contains(location){
+            
+            if location.x < biker.position.x{
                 moveBikerLeft()
-            }
-            else{
+            } else {
                 moveBikerRight()
             }
         }
