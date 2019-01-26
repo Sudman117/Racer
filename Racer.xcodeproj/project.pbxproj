@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8394038A21FA3B250046E188 /* Heal.sks in Resources */ = {isa = PBXBuildFile; fileRef = 8394038921FA3B250046E188 /* Heal.sks */; };
+		8394038C21FA61B70046E188 /* Resist.sks in Resources */ = {isa = PBXBuildFile; fileRef = 8394038B21FA61B70046E188 /* Resist.sks */; };
+		8394038E21FA62900046E188 /* Speed.sks in Resources */ = {isa = PBXBuildFile; fileRef = 8394038D21FA62900046E188 /* Speed.sks */; };
+		8394039221FA84F20046E188 /* Speed Right.sks in Resources */ = {isa = PBXBuildFile; fileRef = 8394039021FA84F20046E188 /* Speed Right.sks */; };
+		8394039621FA85210046E188 /* Resist Right.sks in Resources */ = {isa = PBXBuildFile; fileRef = 8394039421FA85210046E188 /* Resist Right.sks */; };
+		8394039A21FA854B0046E188 /* Heal Right.sks in Resources */ = {isa = PBXBuildFile; fileRef = 8394039821FA854B0046E188 /* Heal Right.sks */; };
 		E90B9BA12127A2DA0005F813 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90B9BA02127A2DA0005F813 /* AppDelegate.swift */; };
 		E90B9BA32127A2DA0005F813 /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = E90B9BA22127A2DA0005F813 /* GameScene.sks */; };
 		E90B9BA52127A2DA0005F813 /* Actions.sks in Resources */ = {isa = PBXBuildFile; fileRef = E90B9BA42127A2DA0005F813 /* Actions.sks */; };
@@ -17,7 +23,6 @@
 		E90B9BB12127A2DD0005F813 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E90B9BAF2127A2DD0005F813 /* LaunchScreen.storyboard */; };
 		E90B9BBC2127A2DD0005F813 /* RacerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90B9BBB2127A2DD0005F813 /* RacerTests.swift */; };
 		E90B9BC72127A2DD0005F813 /* RacerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90B9BC62127A2DD0005F813 /* RacerUITests.swift */; };
-		E90B9BD5212B896A0005F813 /* GameBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90B9BD4212B896A0005F813 /* GameBackground.swift */; };
 		E90B9BD7212B89860005F813 /* GameElements.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90B9BD6212B89860005F813 /* GameElements.swift */; };
 /* End PBXBuildFile section */
 
@@ -39,6 +44,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		8394038921FA3B250046E188 /* Heal.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Heal.sks; sourceTree = "<group>"; };
+		8394038B21FA61B70046E188 /* Resist.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Resist.sks; sourceTree = "<group>"; };
+		8394038D21FA62900046E188 /* Speed.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Speed.sks; sourceTree = "<group>"; };
+		8394039021FA84F20046E188 /* Speed Right.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = "Speed Right.sks"; sourceTree = "<group>"; };
+		8394039421FA85210046E188 /* Resist Right.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = "Resist Right.sks"; sourceTree = "<group>"; };
+		8394039821FA854B0046E188 /* Heal Right.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = "Heal Right.sks"; sourceTree = "<group>"; };
 		E90B9B9D2127A2DA0005F813 /* Racer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Racer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E90B9BA02127A2DA0005F813 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E90B9BA22127A2DA0005F813 /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
@@ -55,7 +66,6 @@
 		E90B9BC22127A2DD0005F813 /* RacerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RacerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E90B9BC62127A2DD0005F813 /* RacerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RacerUITests.swift; sourceTree = "<group>"; };
 		E90B9BC82127A2DD0005F813 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		E90B9BD4212B896A0005F813 /* GameBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameBackground.swift; sourceTree = "<group>"; };
 		E90B9BD6212B89860005F813 /* GameElements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameElements.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -84,6 +94,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8394038F21FA84B50046E188 /* Emitters */ = {
+			isa = PBXGroup;
+			children = (
+				8394038D21FA62900046E188 /* Speed.sks */,
+				8394039021FA84F20046E188 /* Speed Right.sks */,
+				8394038B21FA61B70046E188 /* Resist.sks */,
+				8394039421FA85210046E188 /* Resist Right.sks */,
+				8394038921FA3B250046E188 /* Heal.sks */,
+				8394039821FA854B0046E188 /* Heal Right.sks */,
+			);
+			path = Emitters;
+			sourceTree = "<group>";
+		};
 		E90B9B942127A2DA0005F813 = {
 			isa = PBXGroup;
 			children = (
@@ -112,12 +135,12 @@
 				E90B9BA42127A2DA0005F813 /* Actions.sks */,
 				E90B9BA62127A2DA0005F813 /* GameScene.swift */,
 				E90B9BD6212B89860005F813 /* GameElements.swift */,
-				E90B9BD4212B896A0005F813 /* GameBackground.swift */,
 				E90B9BA82127A2DA0005F813 /* GameViewController.swift */,
 				E90B9BAA2127A2DA0005F813 /* Main.storyboard */,
 				E90B9BAD2127A2DD0005F813 /* Assets.xcassets */,
 				E90B9BAF2127A2DD0005F813 /* LaunchScreen.storyboard */,
 				E90B9BB22127A2DD0005F813 /* Info.plist */,
+				8394038F21FA84B50046E188 /* Emitters */,
 			);
 			path = Racer;
 			sourceTree = "<group>";
@@ -248,10 +271,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				E90B9BAC2127A2DA0005F813 /* Main.storyboard in Resources */,
+				8394039221FA84F20046E188 /* Speed Right.sks in Resources */,
 				E90B9BA32127A2DA0005F813 /* GameScene.sks in Resources */,
 				E90B9BAE2127A2DD0005F813 /* Assets.xcassets in Resources */,
+				8394038A21FA3B250046E188 /* Heal.sks in Resources */,
+				8394039621FA85210046E188 /* Resist Right.sks in Resources */,
+				8394038C21FA61B70046E188 /* Resist.sks in Resources */,
 				E90B9BB12127A2DD0005F813 /* LaunchScreen.storyboard in Resources */,
 				E90B9BA52127A2DA0005F813 /* Actions.sks in Resources */,
+				8394039A21FA854B0046E188 /* Heal Right.sks in Resources */,
+				8394038E21FA62900046E188 /* Speed.sks in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -278,7 +307,6 @@
 			files = (
 				E90B9BD7212B89860005F813 /* GameElements.swift in Sources */,
 				E90B9BA72127A2DA0005F813 /* GameScene.swift in Sources */,
-				E90B9BD5212B896A0005F813 /* GameBackground.swift in Sources */,
 				E90B9BA92127A2DA0005F813 /* GameViewController.swift in Sources */,
 				E90B9BA12127A2DA0005F813 /* AppDelegate.swift in Sources */,
 			);

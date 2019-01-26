@@ -10,7 +10,7 @@ import SpriteKit
 
 extension GameScene{
     
-    func bikerBuild () {
+    func bikerBuild() {
         
         biker.position = CGPoint(x: frame.size.width/2, y: frame.size.height/6)
         biker.zPosition = 10
@@ -22,12 +22,16 @@ extension GameScene{
         biker.physicsBody?.contactTestBitMask = carCategory
         biker.physicsBody?.collisionBitMask = 0
         biker.physicsBody?.usesPreciseCollisionDetection = true
-    
+        //new
+        //biker.lightingBitMask = 1
+        //biker.shadowCastBitMask = 0
+        //biker.shadowedBitMask = 1
+        //old
     }
-
+    
     func moveBikerRight(){
         
-        biker.physicsBody?.velocity = CGVector(dx: 300, dy: 0)
+        biker.physicsBody?.velocity = CGVector(dx: 300 + (speedUpNumber*speedUpBiker), dy: 0)
         let bikerRight = SKTexture(imageNamed: "biker right")
         
         let rotateRight = SKAction.rotate(toAngle: -0.3, duration: 0.5)
@@ -39,7 +43,7 @@ extension GameScene{
     }
     
     func moveBikerLeft(){
-        biker.physicsBody?.velocity = CGVector(dx: -300, dy: 0)
+        biker.physicsBody?.velocity = CGVector(dx: -300 - (speedUpNumber*speedUpBiker), dy: 0)
         let bikerLeft = SKTexture(imageNamed: "biker left")
         
         let rotateLeft = SKAction.rotate(toAngle: 0.3, duration: 0.5)
@@ -47,8 +51,7 @@ extension GameScene{
         
         biker.run(rotateLeft)
         biker.run(steerLeft)
-        
-        
+    
     }
     
     func bikerStop(){
@@ -69,11 +72,10 @@ extension GameScene{
         
         for t in touches{
             let location = t.location(in: self)
-            let box = CGRect(x: 0, y: 0, width: frame.size.width/2, height: frame.size.height)
-            if box.contains(location){
+            
+            if location.x < biker.position.x{
                 moveBikerLeft()
-            }
-            else{
+            } else {
                 moveBikerRight()
             }
         }
