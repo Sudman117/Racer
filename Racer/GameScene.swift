@@ -15,10 +15,28 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let shield = SKShapeNode(circleOfRadius: 200)
     let button = SKShapeNode(rectOf: CGSize(width: 1080, height: 110))
     
+    let obOval1Fade = SKShapeNode(ellipseOf: CGSize(width: 1800, height: 200))
+    let obOval1Real = SKShapeNode(ellipseOf: CGSize(width: 1800, height: 180))
+    let obOval2Fade = SKShapeNode(ellipseOf: CGSize(width: 1800, height: 200))
+    let obOval2Real = SKShapeNode(ellipseOf: CGSize(width: 1800, height: 180))
+    let obOval3Fade = SKShapeNode(ellipseOf: CGSize(width: 1800, height: 200))
+    let obOval3Real = SKShapeNode(ellipseOf: CGSize(width: 1800, height: 180))
+    
+    let obShip1 = SKShapeNode(rectOf: CGSize(width: 250, height: 250))
+    let obShip2 = SKShapeNode(rectOf: CGSize(width: 250, height: 250))
+    let obShip3 = SKShapeNode(rectOf: CGSize(width: 250, height: 250))
+    let obShip4 = SKShapeNode(rectOf: CGSize(width: 250, height: 250))
+    
+    var difficulty2:Bool = false
+    var difficulty3:Bool = false
+    var difficulty4:Bool = false
+    var difficulty5:Bool = false
+    
     var currentHealth:Int = 500
     var movementValue:Float = 0
     var velocityDy:Double = -100
-    
+    var velocityBiker:Double = 300
+
     var speedUpBiker:Int = 100
     var speedUpNumber:Int = 0
     
@@ -37,17 +55,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var bombBoxOn:Bool = false
     var bombFire:Bool = false
     var teleportOn:Bool = false
+    var phaseOutOn:Bool = false
+    
     var bCar:Bool = false
     var bPuddle:Bool = false
     var bHeal:Bool = false
     var bResist:Bool = false
     var bSpeed:Bool = false
+    var bObNode:Bool = false
+    var bObOval:Bool = false
+    var bObRock:Bool = false
+    var bObBullet:Bool = false
+    var bObLanded:Bool = false
+    
     var moveRight:Bool = true
     var moveLeft:Bool = false
     
     var healthBar = SKSpriteNode()
     var healthLabel = SKLabelNode()
     var cameraNode = SKCameraNode()
+    var rectBoundary = SKShapeNode()
     let speedParticlesRight = SKEmitterNode(fileNamed: "Speed Right.sks")
     let speedParticles = SKEmitterNode(fileNamed: "Speed.sks")
     let resistParticlesRight = SKEmitterNode(fileNamed: "Resist Right.sks")
@@ -56,6 +83,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let healParticles = SKEmitterNode(fileNamed: "Heal.sks")
     let starfieldNode = SKSpriteNode(imageNamed: "starfield")
     let starfieldNode2 = SKSpriteNode(imageNamed: "starfield")
+    var bombBox = SKSpriteNode(imageNamed: "reticule")
     
     var rect1 = SKSpriteNode()
     var rect2 = SKSpriteNode()
@@ -64,10 +92,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var rect5 = SKSpriteNode()
     var rect6 = SKSpriteNode()
     
-    var bombBox = SKSpriteNode(imageNamed: "reticule")
-    
-    var gameTimer:Timer!
     var gameTimer2:Timer!
+    var gameTimer3:Timer!
     var gameTimer4:Timer!
     var gameTimer7:Timer!
     var gameTimer8:Timer!
@@ -75,13 +101,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     let bikerCategory:UInt32 = 1 << 1
     let carCategory:UInt32 = 1 << 2
-    let borderCategory:UInt32 = 1 << 3
+    let boundaryCategory:UInt32 = 1 << 3
     let puddleCategory:UInt32 = 1 << 4
     let speedCategory:UInt32 = 1 << 5
     let resistCategory:UInt32 = 1 << 6
     let healCategory:UInt32 = 1 << 7
     let shieldCategory:UInt32 = 1 << 8
     let bombCategory:UInt32 = 1 << 9
+    let obNodeCategory:UInt32 = 1 << 10
+    let obOvalCategory:UInt32 = 1 << 11
+    let obRockCategory:UInt32 = 1 << 12
+    let obBulletCategory:UInt32 = 1 << 13
+    let obLandedCategory:UInt32 = 1 << 14
     
     var activeArray = [String]()
     
@@ -104,6 +135,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         tapRecognizer.numberOfTapsRequired = 2
         
         return tapRecognizer
+        //does not work :p
     }
     
     @objc func doubleTapDetected() {
@@ -264,9 +296,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             currentHealth += (bikerHealing*healUpNumber)
         }
         
-        if teleportOn == false {
+        if phaseOutOn == false {
             let delay = SKAction.wait(forDuration: 3)
-            let on = SKAction.run {self.teleportOn = true}
+            let on = SKAction.run {self.phaseOutOn = true}
             let sequence = SKAction.sequence([delay,on])
             self.run(sequence)
         }
@@ -287,6 +319,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             rect6.isHidden = false
         }
         else if speedUpNumber == 4 && resistUpNumber == 1{
+            //var bikercategory, alpha value
+            if phaseOutOn == false {
+                let delay = SKAction.wait(forDuration: 3)
+                let on = SKAction.run {self.teleportOn = true}
+                let sequence = SKAction.sequence([delay,on])
+                self.run(sequence)
+            }
             rect6.isHidden = false
         } else if speedUpNumber == 4 && healUpNumber == 1{
             rect6.isHidden = false
@@ -299,9 +338,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         } else if speedUpNumber == 2 && resistUpNumber == 3 {
             rect6.isHidden = false
         } else if speedUpNumber == 2 && resistUpNumber == 2 && healUpNumber == 1 {
-            //throw bomb
-            //add cooldown timer
-            //add rect 6 image
             
             if bombBoxOn == false {
                 let delay = SKAction.wait(forDuration: 5)
@@ -433,7 +469,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.physicsWorld.gravity = CGVector(dx: 0, dy: 0)
         physicsWorld.contactDelegate = self
         
-        //new
+        if pickUpNumber >= 5 {
+            difficulty2 = true
+        } else if pickUpNumber >= 10 {
+            difficulty2 = false
+            difficulty3 = true
+        } else if pickUpNumber >= 15 {
+            difficulty2 = false
+            difficulty3 = false
+            difficulty4 = true
+        } else if pickUpNumber >= 20 {
+            difficulty2 = false
+            difficulty3 = false
+            difficulty4 = false
+            difficulty5 = true
+        }
+        
+        
         //let lightSource = SKLightNode()
         //lightSource.categoryBitMask = 1
         //lightSource.falloff = 0
@@ -442,36 +494,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         //lightSource.shadowColor = SKColor(displayP3Red: 0, green: 0, blue: 0, alpha: 0.8)
         //lightSource.position = CGPoint(x: frame.size.width/2, y: frame.size.height*0.2)
         //addChild(lightSource)
-        //old
-        
-        let rightBorder = SKSpriteNode(color: UIColor.red, size: CGSize(width: 100, height: self.frame.height))
-        rightBorder.position = CGPoint(x: -frame.size.width/2, y: self.frame.height / 2)
-        rightBorder.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: rightBorder.size.width, height: rightBorder.size.height))
-        rightBorder.physicsBody?.restitution = 0
-        rightBorder.physicsBody?.categoryBitMask = borderCategory
-        rightBorder.physicsBody?.collisionBitMask = bikerCategory
-        rightBorder.physicsBody?.contactTestBitMask = bikerCategory
-        rightBorder.physicsBody?.isDynamic = false
-        rightBorder.physicsBody?.friction = 1
-        rightBorder.physicsBody?.affectedByGravity = false
-        addChild(rightBorder)
-        
-        let leftBorder = SKSpriteNode(color: UIColor.red, size: CGSize(width: 100, height: self.frame.height))
-        leftBorder.position = CGPoint(x: frame.size.width*1.5, y: self.frame.height / 2)
-        leftBorder.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: leftBorder.size.width, height: leftBorder.size.height))
-        leftBorder.physicsBody?.restitution = 0
-        leftBorder.physicsBody?.categoryBitMask = borderCategory
-        leftBorder.physicsBody?.collisionBitMask = bikerCategory
-        leftBorder.physicsBody?.contactTestBitMask = bikerCategory
-        leftBorder.physicsBody?.isDynamic = false
-        leftBorder.physicsBody?.friction = 1
-        leftBorder.physicsBody?.affectedByGravity = false
-        addChild(leftBorder)
+
         
         camera = cameraNode
         cameraNode.position.x = frame.size.width/2
         cameraNode.position.y = frame.size.height/2
         addChild(cameraNode)
+        
+        let boundaryRect = CGRect(x: 0, y: 0, width: frame.size.width, height: frame.size.height)
+        rectBoundary = SKShapeNode(rect: boundaryRect)
+        rectBoundary.physicsBody = SKPhysicsBody(edgeLoopFrom: boundaryRect)
+        rectBoundary.strokeColor = .yellow
+        rectBoundary.lineWidth = 10
+        rectBoundary.physicsBody?.categoryBitMask = boundaryCategory
+        rectBoundary.physicsBody?.contactTestBitMask = bikerCategory
+        rectBoundary.physicsBody?.collisionBitMask = bikerCategory
+        rectBoundary.physicsBody?.isDynamic = false
+        rectBoundary.physicsBody?.friction = 1
+        rectBoundary.physicsBody?.affectedByGravity = false
+        rectBoundary.physicsBody?.restitution = 0
+        //addChild(rectBoundary)
         
         addChild(biker)
         bikerBuild()
@@ -479,7 +521,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(button)
         makeButton()
         
-        starField()
+        //starField()
         
         bombBox.physicsBody = SKPhysicsBody(texture: bombBox.texture!, size: bombBox.size)
         bombBox.position = CGPoint(x: frame.size.width/2, y: frame.size.height*(5.5/10))
@@ -539,38 +581,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(healthBar)
         addChild(healthLabel)
         
-        gameTimer = Timer.scheduledTimer(timeInterval: 10, target: self, selector: #selector(addObstacleCar), userInfo: nil, repeats: true)
-        gameTimer2 = Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(addPuddle), userInfo: nil, repeats: true)
-        gameTimer4 = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(addPowerUps), userInfo: nil, repeats: true)
+
+        gameTimer2 = Timer.scheduledTimer(timeInterval: 1200, target: self, selector: #selector(addPuddle), userInfo: nil, repeats: true)
+        gameTimer3 = Timer.scheduledTimer(timeInterval: 10, target: self, selector: #selector(callObstacleArray), userInfo: nil, repeats: true)
+        gameTimer4 = Timer.scheduledTimer(timeInterval: 700, target: self, selector: #selector(addPowerUps), userInfo: nil, repeats: true)
         gameTimer7 = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(runPowerUpCombinations), userInfo: nil, repeats: true)
         gameTimer8 = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(updateArrayImage), userInfo: nil, repeats: true)
-
+        
 }
     
-    @objc func addObstacleCar() {
-
-        let obstacleCar = SKSpriteNode(imageNamed: "car")
-        
-        let positionArrayX = [frame.size.width/8,frame.size.width * 0.375, frame.size.width * 0.625,frame.size.width * 0.875]
-        let nextPosition = positionArrayX[Int(arc4random_uniform(UInt32(positionArrayX.count)))]
-        
-        obstacleCar.position = CGPoint(x: nextPosition, y: frame.size.height * 1.5)
-        obstacleCar.zPosition = 3
-        obstacleCar.physicsBody = SKPhysicsBody(texture: obstacleCar.texture!, size: obstacleCar.texture!.size())
-        obstacleCar.physicsBody?.linearDamping = 0
-        
-        obstacleCar.physicsBody?.categoryBitMask = carCategory
-        obstacleCar.physicsBody?.contactTestBitMask = bikerCategory
-        obstacleCar.physicsBody?.collisionBitMask = 0
-        
-        self.addChild(obstacleCar)
-        
-        obstacleCar.physicsBody?.velocity = CGVector(dx: 0, dy: velocityDy)
-        
-        if obstacleCar.position.y < -frame.size.height/4 {
-            obstacleCar.removeFromParent()
-        }
-    }
     
     @objc func addPuddle() {
         
@@ -603,7 +622,778 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    func shieldBuild(){
+    //new
+    
+    func obstacle1() {
+        
+        let ob1Node = SKShapeNode(circleOfRadius: 100)
+        let ob2Node = SKShapeNode(circleOfRadius: 100)
+        let ob3Node = SKShapeNode(circleOfRadius: 100)
+        let ob4Node = SKShapeNode(circleOfRadius: 100)
+        let ob5Node = SKShapeNode(circleOfRadius: 100)
+        
+        ob1Node.position = CGPoint(x: CGFloat(biker.position.x) - frame.size.width*(3/8), y: CGFloat(biker.position.y) + frame.size.height*0.4)
+        ob2Node.position = CGPoint(x: CGFloat(biker.position.x) - frame.size.width*0.187, y: CGFloat(biker.position.y) + frame.size.height*0.4)
+        ob3Node.position = CGPoint(x: CGFloat(biker.position.x), y: CGFloat(biker.position.y) + frame.size.height*0.4)
+        ob4Node.position = CGPoint(x: CGFloat(biker.position.x) + frame.size.width*0.187, y: CGFloat(biker.position.y) + frame.size.height*0.4)
+        ob5Node.position = CGPoint(x: CGFloat(biker.position.x) + frame.size.width*(3/8), y: CGFloat(biker.position.y) + frame.size.height*0.4)
+        
+        ob1Node.physicsBody = SKPhysicsBody(circleOfRadius: 100)
+        ob2Node.physicsBody = SKPhysicsBody(circleOfRadius: 100)
+        ob3Node.physicsBody = SKPhysicsBody(circleOfRadius: 100)
+        ob4Node.physicsBody = SKPhysicsBody(circleOfRadius: 100)
+        ob5Node.physicsBody = SKPhysicsBody(circleOfRadius: 100)
+        
+        ob1Node.physicsBody?.categoryBitMask = obNodeCategory
+        ob2Node.physicsBody?.categoryBitMask = obNodeCategory
+        ob3Node.physicsBody?.categoryBitMask = obNodeCategory
+        ob4Node.physicsBody?.categoryBitMask = obNodeCategory
+        ob5Node.physicsBody?.categoryBitMask = obNodeCategory
+        
+        ob1Node.physicsBody?.collisionBitMask = 0
+        ob2Node.physicsBody?.collisionBitMask = 0
+        ob3Node.physicsBody?.collisionBitMask = 0
+        ob4Node.physicsBody?.collisionBitMask = 0
+        ob5Node.physicsBody?.collisionBitMask = 0
+        
+        ob1Node.physicsBody?.contactTestBitMask = bikerCategory
+        ob2Node.physicsBody?.contactTestBitMask = bikerCategory
+        ob3Node.physicsBody?.contactTestBitMask = bikerCategory
+        ob4Node.physicsBody?.contactTestBitMask = bikerCategory
+        ob5Node.physicsBody?.contactTestBitMask = bikerCategory
+        
+        ob1Node.fillColor = .yellow
+        ob2Node.fillColor = .yellow
+        ob3Node.fillColor = .yellow
+        ob4Node.fillColor = .yellow
+        ob5Node.fillColor = .yellow
+        
+        ob1Node.alpha = 0.0
+        ob2Node.alpha = 0.0
+        ob3Node.alpha = 0.0
+        ob4Node.alpha = 0.0
+        ob5Node.alpha = 0.0
+        
+        addChild(ob1Node)
+        addChild(ob2Node)
+        addChild(ob3Node)
+        addChild(ob4Node)
+        addChild(ob5Node)
+        
+        let fadeIn = SKAction.fadeIn(withDuration: 2)
+        
+        ob1Node.run(fadeIn)
+        ob2Node.run(fadeIn)
+        ob3Node.run(fadeIn)
+        ob4Node.run(fadeIn)
+        ob5Node.run(fadeIn)
+
+        self.run(SKAction.wait(forDuration: 2)) {
+            
+            let randomNumber1 = Int.random(in: -400...400)
+            let randomNumber2 = Int.random(in: -400...400)
+            let randomNumber3 = Int.random(in: -400...400)
+            let randomNumber4 = Int.random(in: -400...400)
+            let randomNumber5 = Int.random(in: -400...400)
+            
+            ob1Node.physicsBody?.velocity = CGVector(dx: randomNumber1, dy: -400)
+            ob2Node.physicsBody?.velocity = CGVector(dx: randomNumber2, dy: -400)
+            ob3Node.physicsBody?.velocity = CGVector(dx: randomNumber3, dy: -400)
+            ob4Node.physicsBody?.velocity = CGVector(dx: randomNumber4, dy: -400)
+            ob5Node.physicsBody?.velocity = CGVector(dx: randomNumber5, dy: -400)
+            
+            let delay = SKAction.wait(forDuration: 6)
+            let remove = SKAction.removeFromParent()
+            let sequence = SKAction.sequence([delay,remove])
+            
+            ob1Node.run(sequence)
+            ob2Node.run(sequence)
+            ob3Node.run(sequence)
+            ob4Node.run(sequence)
+            ob5Node.run(sequence)
+            
+        }
+    
+        print("obstacle1")
+        
+    }
+    
+    func obstacle2() {
+
+        let randomRotate:Int = Int.random(in: -70...70)
+        let randomRotate2:Int = Int.random(in: -70...70)
+        let randomRotate3:Int = Int.random(in: -70...70)
+        
+        var randomY:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
+        var randomX:Int = Int.random(in: -(Int(frame.size.width/2))...(Int(frame.size.width/2)))
+        var randomY2:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
+        var randomX2:Int = Int.random(in: -(Int(frame.size.width/2))...(Int(frame.size.width/2)))
+        var randomY3:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
+        var randomX3:Int = Int.random(in: -(Int(frame.size.width/2))...(Int(frame.size.width/2)))
+        
+        if (frame.size.height/2 - CGFloat(randomY)) > frame.size.height/2 && ((frame.size.height/2)-abs(CGFloat(randomY)) < (frame.size.width/2 - abs(CGFloat(randomX)))) {
+            randomY = Int(-frame.size.height/2)
+        } else if (frame.size.height/2 - CGFloat(randomY)) < frame.size.height/2 && ((frame.size.height/2)-abs(CGFloat(randomY)) < (frame.size.width/2 - abs(CGFloat(randomX)))) {
+            randomY = Int(frame.size.height/2)
+        }
+        
+        if (frame.size.height/2 - CGFloat(randomY2)) > frame.size.height/2 && ((frame.size.height/2)-abs(CGFloat(randomY2)) < (frame.size.width/2 - abs(CGFloat(randomX2)))) {
+            randomY2 = Int(-frame.size.height/2)
+        } else if (frame.size.height/2 - CGFloat(randomY2)) < frame.size.height/2 && ((frame.size.height/2)-abs(CGFloat(randomY2)) < (frame.size.width/2 - abs(CGFloat(randomX2)))) {
+            randomY2 = Int(frame.size.height/2)
+        }
+        
+        if (frame.size.height/2 - CGFloat(randomY3)) > frame.size.height/2 && ((frame.size.height/2)-abs(CGFloat(randomY3)) < (frame.size.width/2 - abs(CGFloat(randomX3)))) {
+            randomY3 = Int(-frame.size.height/2)
+        } else if (frame.size.height/2 - CGFloat(randomY3)) < frame.size.height/2 && ((frame.size.height/2)-abs(CGFloat(randomY3)) < (frame.size.width/2 - abs(CGFloat(randomX3)))) {
+            randomY3 = Int(frame.size.height/2)
+        }
+        
+        
+        if (frame.size.width/2 - CGFloat(randomX)) > frame.size.width/2 && ((frame.size.width/2)-abs(CGFloat(randomX)) < (frame.size.height/2 - abs(CGFloat(randomY)))) {
+            randomX = Int(-frame.size.width/2)
+        } else if (frame.size.width/2 - CGFloat(randomX)) < frame.size.width/2 && ((frame.size.width/2)-abs(CGFloat(randomX)) < (frame.size.height/2 - abs(CGFloat(randomY)))) {
+            randomX = Int(frame.size.width/2)
+        }
+        
+        if (frame.size.width/2 - CGFloat(randomX2)) > frame.size.width/2 && ((frame.size.width/2)-abs(CGFloat(randomX2)) < (frame.size.height/2 - abs(CGFloat(randomY2)))) {
+            randomX2 = Int(-frame.size.width/2)
+        } else if (frame.size.width/2 - CGFloat(randomX2)) < frame.size.width/2 && ((frame.size.width/2)-abs(CGFloat(randomX2)) < (frame.size.height/2 - abs(CGFloat(randomY2)))) {
+            randomX2 = Int(frame.size.width/2)
+        }
+        
+        if (frame.size.width/2 - CGFloat(randomX3)) > frame.size.width/2 && ((frame.size.width/2)-abs(CGFloat(randomX3)) < (frame.size.height/2 - abs(CGFloat(randomY3)))) {
+            randomX3 = Int(-frame.size.width/2)
+        } else if (frame.size.width/2 - CGFloat(randomX3)) < frame.size.width/2 && ((frame.size.width/2)-abs(CGFloat(randomX3)) < (frame.size.height/2 - abs(CGFloat(randomY3)))) {
+            randomX3 = Int(frame.size.width/2)
+        }
+        
+        obOval1Fade.position = CGPoint(x: Int(biker.position.x) + randomX, y: Int(biker.position.y) + randomY)
+        obOval1Fade.zPosition = -2
+        obOval1Fade.alpha = 0
+        obOval1Fade.fillColor = .red
+        
+        obOval1Real.position = CGPoint(x: Int(biker.position.x) + randomX, y: Int(biker.position.y) + randomY)
+        obOval1Real.fillColor = .white
+        obOval1Real.zPosition = -1
+        //physicsbody broken get texture
+        obOval1Real.physicsBody = SKPhysicsBody()
+        obOval1Real.physicsBody?.categoryBitMask = obOvalCategory
+        obOval1Real.physicsBody?.collisionBitMask = 0
+        obOval1Real.physicsBody?.contactTestBitMask = bikerCategory
+        
+        obOval2Fade.position = CGPoint(x: Int(biker.position.x) + randomX2, y: Int(biker.position.y) + randomY2)
+        obOval2Fade.zPosition = -2
+        obOval2Fade.alpha = 0
+        obOval2Fade.fillColor = .red
+        
+        obOval2Real.position = CGPoint(x: Int(biker.position.x) + randomX2, y: Int(biker.position.y) + randomY2)
+        obOval2Real.fillColor = .white
+        obOval2Real.zPosition = -1
+        obOval2Real.physicsBody = SKPhysicsBody()
+        obOval2Real.physicsBody?.categoryBitMask = obOvalCategory
+        obOval2Real.physicsBody?.collisionBitMask = 0
+        obOval2Real.physicsBody?.contactTestBitMask = bikerCategory
+        
+        obOval3Fade.position = CGPoint(x: Int(biker.position.x) + randomX3, y: Int(biker.position.y) + randomY3)
+        obOval3Fade.zPosition = -2
+        obOval3Fade.alpha = 0
+        obOval3Fade.fillColor = .red
+        
+        obOval3Real.position = CGPoint(x: Int(biker.position.x) + randomX3, y: Int(biker.position.y) + randomY3)
+        obOval3Real.fillColor = .white
+        obOval3Real.zPosition = -1
+        obOval3Real.physicsBody = SKPhysicsBody()
+        obOval3Real.physicsBody?.categoryBitMask = obOvalCategory
+        obOval3Real.physicsBody?.collisionBitMask = 0
+        obOval3Real.physicsBody?.contactTestBitMask = bikerCategory
+        
+        let rotate = SKAction.rotate(byAngle: CGFloat(randomRotate), duration: 0)
+        let rotate2 = SKAction.rotate(byAngle: CGFloat(randomRotate2), duration: 0)
+        let rotate3 = SKAction.rotate(byAngle: CGFloat(randomRotate3), duration: 0)
+        let fadeIn = SKAction.fadeIn(withDuration: 2)
+        let spawnDelay = SKAction.wait(forDuration: 2)
+        let remove = SKAction.removeFromParent()
+        let sequence = SKAction.sequence([rotate,fadeIn,spawnDelay,remove])
+        let sequence2 = SKAction.sequence([rotate2,fadeIn,spawnDelay,remove])
+        let sequence3 = SKAction.sequence([rotate3,fadeIn,spawnDelay,remove])
+        
+        self.run(SKAction.wait(forDuration: 2)) {
+            self.addChild(self.obOval1Real)
+            let rotate4 = SKAction.rotate(byAngle:CGFloat(randomRotate), duration:0)
+            let spawnDelayA = SKAction.wait(forDuration: 2)
+            let removeA = SKAction.removeFromParent()
+            let sequenceA = SKAction.sequence([rotate4,spawnDelayA,removeA])
+            
+            self.obOval1Real.run(sequenceA)
+        }
+        
+        self.run(SKAction.wait(forDuration: 2)) {
+            self.addChild(self.obOval2Real)
+            let rotate5 = SKAction.rotate(byAngle:CGFloat(randomRotate2), duration:0)
+            let spawnDelayA = SKAction.wait(forDuration: 2)
+            let removeA = SKAction.removeFromParent()
+            let sequenceA = SKAction.sequence([rotate5,spawnDelayA,removeA])
+            
+            self.obOval2Real.run(sequenceA)
+        }
+        
+        self.run(SKAction.wait(forDuration: 2)) {
+            self.addChild(self.obOval3Real)
+            let rotate6 = SKAction.rotate(byAngle:CGFloat(randomRotate3), duration:0)
+            let spawnDelayA = SKAction.wait(forDuration: 2)
+            let removeA = SKAction.removeFromParent()
+            let sequenceA = SKAction.sequence([rotate6,spawnDelayA,removeA])
+            
+            self.obOval3Real.run(sequenceA)
+        }
+        
+        addChild(obOval1Fade)
+        addChild(obOval2Fade)
+        addChild(obOval3Fade)
+        
+        obOval1Fade.run(sequence)
+        obOval2Fade.run(sequence2)
+        obOval3Fade.run(sequence3)
+        
+        print("obstacle2")
+    
+    }
+    
+    func obstacle3() {
+  
+        let obRock1 = SKShapeNode(rectOf: CGSize(width: 300, height: 300))
+        let obRock2 = SKShapeNode(rectOf: CGSize(width: 300, height: 300))
+        let obRock3 = SKShapeNode(rectOf: CGSize(width: 300, height: 300))
+        
+        let randomY:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
+        let positivePositionX:CGFloat = CGFloat(frame.size.width)
+        let negativePositionX:CGFloat = -CGFloat(frame.size.width)
+        let spawnXArray = [positivePositionX,negativePositionX]
+        let randomSpawnX:Int = Int.random(in: 0...1)
+        
+        let randomY2:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
+        let positivePositionX2:CGFloat = CGFloat(frame.size.width)
+        let negativePositionX2:CGFloat = -CGFloat(frame.size.width)
+        let spawnXArray2 = [positivePositionX2,negativePositionX2]
+        let randomSpawnX2:Int = Int.random(in: 0...1)
+        
+        let randomY3:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
+        let positivePositionX3:CGFloat = CGFloat(frame.size.width)
+        let negativePositionX3:CGFloat = -CGFloat(frame.size.width)
+        let spawnXArray3 = [positivePositionX3,negativePositionX3]
+        let randomSpawnX3:Int = Int.random(in: 0...1)
+        
+        let randomVelocity1:Int = Int.random(in: 800...1200)
+        let randomVelocity2:Int = Int.random(in: 800...1200)
+        let randomVelocity3:Int = Int.random(in: 800...1200)
+        
+        obRock1.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 300, height: 300))
+        obRock2.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 300, height: 300))
+        obRock3.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 300, height: 300))
+        
+        obRock1.physicsBody?.categoryBitMask = obRockCategory
+        obRock1.physicsBody?.collisionBitMask = 0
+        obRock1.physicsBody?.contactTestBitMask = bikerCategory
+        
+        obRock2.physicsBody?.categoryBitMask = obRockCategory
+        obRock2.physicsBody?.collisionBitMask = 0
+        obRock2.physicsBody?.contactTestBitMask = bikerCategory
+        
+        obRock3.physicsBody?.categoryBitMask = obRockCategory
+        obRock3.physicsBody?.collisionBitMask = 0
+        obRock3.physicsBody?.contactTestBitMask = bikerCategory
+        
+        obRock1.position = CGPoint(x: (CGFloat(biker.position.x) + spawnXArray[randomSpawnX]), y: (CGFloat(biker.position.y)) + CGFloat(randomY))
+        obRock2.position = CGPoint(x: (CGFloat(biker.position.x) + spawnXArray2[randomSpawnX2]), y: (CGFloat(biker.position.y)) + CGFloat(randomY2))
+        obRock3.position = CGPoint(x: (CGFloat(biker.position.x) + spawnXArray3[randomSpawnX3]), y: (CGFloat(biker.position.y)) + CGFloat(randomY3))
+        //fix remove from parent
+        obRock1.zPosition = -1
+        obRock2.zPosition = -1
+        obRock3.zPosition = -1
+        
+        obRock1.fillColor = .blue
+        obRock2.fillColor = .yellow
+        obRock3.fillColor = .green
+        
+        addChild(obRock1)
+        addChild(obRock2)
+        addChild(obRock3)
+        
+        if randomSpawnX == 0 {
+            
+        obRock1.physicsBody?.velocity = CGVector(dx: -randomVelocity1, dy: (3/2)*(randomY))
+            
+        } else if randomSpawnX == 1 {
+            
+        obRock1.physicsBody?.velocity = CGVector(dx: randomVelocity1, dy: -(3/2)*(randomY))
+            
+        }
+        
+        if randomSpawnX2 == 0 {
+            
+            obRock2.physicsBody?.velocity = CGVector(dx: -randomVelocity2, dy: (3/2)*(randomY2))
+            
+        } else if randomSpawnX2 == 1 {
+            
+            obRock2.physicsBody?.velocity = CGVector(dx: randomVelocity2, dy: -(3/2)*(randomY2))
+            
+        }
+        
+        if randomSpawnX3 == 0 {
+            
+            obRock3.physicsBody?.velocity = CGVector(dx: -randomVelocity3, dy: (3/2)*(randomY3))
+            
+        } else if randomSpawnX3 == 1 {
+            
+            obRock3.physicsBody?.velocity = CGVector(dx: randomVelocity3, dy: -(3/2)*(randomY3))
+            
+        }
+        
+        self.run(SKAction.wait(forDuration: 5)) {
+            
+            let remove = SKAction.removeFromParent()
+
+            obRock1.run(remove)
+            obRock2.run(remove)
+            obRock3.run(remove)
+            
+        }
+        
+        print("obstacle3")
+        
+    }
+    
+    func obstacle4() {
+        
+        let randomY1:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
+        let randomX1:Int = Int.random(in: -(Int(frame.size.width/2))...(Int(frame.size.width/2)))
+        let randomY2:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
+        let randomX2:Int = Int.random(in: -(Int(frame.size.width/2))...(Int(frame.size.width/2)))
+        let randomY3:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
+        let randomX3:Int = Int.random(in: -(Int(frame.size.width/2))...(Int(frame.size.width/2)))
+        let randomY4:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
+        let randomX4:Int = Int.random(in: -(Int(frame.size.width/2))...(Int(frame.size.width/2)))
+        
+        let ship1pos = CGPoint(x: biker.position.x + CGFloat(randomX1), y: biker.position.y + CGFloat(randomY1))
+        let ship2pos = CGPoint(x: biker.position.x + CGFloat(randomX2), y: biker.position.y + CGFloat(randomY2))
+        let ship3pos = CGPoint(x: biker.position.x + CGFloat(randomX3), y: biker.position.y + CGFloat(randomY3))
+        let ship4pos = CGPoint(x: biker.position.x + CGFloat(randomX4), y: biker.position.y + CGFloat(randomY4))
+        
+        if randomX1 <= 0 && randomY1 <= 0{
+            
+            obShip1.position = CGPoint(x: ship1pos.x - frame.size.width, y: ship1pos.y - frame.size.height)
+            
+        } else if randomX1 <= 0 && randomY1 >= 0{
+            
+            obShip1.position = CGPoint(x: ship1pos.x - frame.size.width, y: ship1pos.y + frame.size.height)
+            
+        } else if randomX1 >= 0 && randomY1 <= 0{
+            
+            obShip1.position = CGPoint(x: ship1pos.x + frame.size.width, y: ship1pos.y - frame.size.height)
+            
+        } else if randomX1 >= 0 && randomY1 >= 0{
+            
+            obShip1.position = CGPoint(x: ship1pos.x + frame.size.width, y: ship1pos.y + frame.size.height)
+            
+        }
+        
+        if randomX2 <= 0 && randomY2 <= 0{
+            
+            obShip2.position = CGPoint(x: ship2pos.x - frame.size.width, y: ship2pos.y - frame.size.height)
+            
+        } else if randomX2 <= 0 && randomY2 >= 0{
+            
+            obShip2.position = CGPoint(x: ship2pos.x - frame.size.width, y: ship2pos.y + frame.size.height)
+            
+        } else if randomX2 >= 0 && randomY2 <= 0{
+            
+            obShip2.position = CGPoint(x: ship2pos.x + frame.size.width, y: ship2pos.y - frame.size.height)
+            
+        } else if randomX2 >= 0 && randomY2 >= 0{
+            
+            obShip2.position = CGPoint(x: ship2pos.x + frame.size.width, y: ship2pos.y + frame.size.height)
+            
+        }
+        
+        if randomX3 <= 0 && randomY3 <= 0{
+            
+            obShip3.position = CGPoint(x: ship3pos.x - frame.size.width, y: ship3pos.y - frame.size.height)
+            
+        } else if randomX3 <= 0 && randomY3 >= 0{
+            
+            obShip3.position = CGPoint(x: ship3pos.x - frame.size.width, y: ship3pos.y + frame.size.height)
+            
+        } else if randomX3 >= 0 && randomY3 <= 0{
+            
+            obShip3.position = CGPoint(x: ship3pos.x + frame.size.width, y: ship3pos.y - frame.size.height)
+            
+        } else if randomX3 >= 0 && randomY3 >= 0{
+            
+            obShip3.position = CGPoint(x: ship3pos.x + frame.size.width, y: ship3pos.y + frame.size.height)
+            
+        }
+        
+        if randomX4 <= 0 && randomY4 <= 0{
+            
+            obShip4.position = CGPoint(x: ship4pos.x - frame.size.width, y: ship1pos.y - frame.size.height)
+            
+        } else if randomX4 <= 0 && randomY4 >= 0{
+            
+            obShip4.position = CGPoint(x: ship4pos.x - frame.size.width, y: ship4pos.y + frame.size.height)
+            
+        } else if randomX4 >= 0 && randomY4 <= 0{
+            
+            obShip4.position = CGPoint(x: ship4pos.x + frame.size.width, y: ship4pos.y - frame.size.height)
+            
+        } else if randomX4 >= 0 && randomY4 >= 0{
+            
+            obShip4.position = CGPoint(x: ship4pos.x + frame.size.width, y: ship4pos.y + frame.size.height)
+            
+        }
+        
+        obShip1.fillColor = .red
+        obShip2.fillColor = .blue
+        obShip3.fillColor = .green
+        obShip4.fillColor = .white
+        
+        obShip1.zPosition = -1
+        obShip2.zPosition = -1
+        obShip3.zPosition = -1
+        obShip4.zPosition = -1
+        
+        addChild(obShip1)
+        addChild(obShip2)
+        addChild(obShip3)
+        addChild(obShip4)
+        
+        let rotate = SKAction.rotate(byAngle: CGFloat(Double.pi/4), duration: 0)
+        let moveShip1 = SKAction.move(to: ship1pos, duration: 2)
+        let moveShip2 = SKAction.move(to: ship2pos, duration: 2)
+        let moveShip3 = SKAction.move(to: ship3pos, duration: 2)
+        let moveShip4 = SKAction.move(to: ship4pos, duration: 2)
+        let fireBullets = SKAction.run {self.bulletsFiring()}
+        let wait = SKAction.wait(forDuration: 5)
+        let wait2 = SKAction.wait(forDuration: 0.3)
+        let flyAway1 = SKAction.move(to: CGPoint(x: 3*ship1pos.x, y: 3*ship1pos.y), duration: 2)
+        let flyAway2 = SKAction.move(to: CGPoint(x: 3*ship2pos.x, y: 3*ship2pos.y), duration: 2)
+        let flyAway3 = SKAction.move(to: CGPoint(x: 3*ship3pos.x, y: 3*ship3pos.y), duration: 2)
+        let flyAway4 = SKAction.move(to: CGPoint(x: 3*ship4pos.x, y: 3*ship4pos.y), duration: 2)
+        let remove = SKAction.removeFromParent()
+        let actionArray1 = [rotate,moveShip1,wait,flyAway1,remove]
+        let actionArray2 = [rotate,moveShip2,wait,flyAway2,remove]
+        let actionArray3 = [rotate,moveShip3,wait,flyAway3,remove]
+        let actionArray4 = [rotate,moveShip4,wait,flyAway4,remove]
+        let sequence = SKAction.sequence(actionArray1)
+        let sequence2 = SKAction.sequence(actionArray2)
+        let sequence3 = SKAction.sequence(actionArray3)
+        let sequence4 = SKAction.sequence(actionArray4)
+        let sequenceFire = SKAction.sequence([wait2,fireBullets])
+        let fireAgain = SKAction.repeat(sequenceFire, count: 12)
+        
+        obShip1.run(sequence)
+        obShip2.run(sequence2)
+        obShip3.run(sequence3)
+        obShip4.run(sequence4)
+        
+        self.run(SKAction.wait(forDuration: 2)) {
+            
+            self.run(fireAgain)
+            
+        }
+        
+        print("obstacle4")
+        
+    }
+    
+    func obstacle5() {
+        
+        let obShadow1 = SKSpriteNode(imageNamed: "reticule")
+        let obShadow2 = SKSpriteNode(imageNamed: "reticule")
+        let obShadow3 = SKSpriteNode(imageNamed: "reticule")
+        let obShadow4 = SKSpriteNode(imageNamed: "reticule")
+        
+        let obLanded1 = SKShapeNode(circleOfRadius: 150)
+        let obLanded2 = SKShapeNode(circleOfRadius: 150)
+        let obLanded3 = SKShapeNode(circleOfRadius: 150)
+        let obLanded4 = SKShapeNode(circleOfRadius: 150)
+        
+        let randomY1:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
+        let randomX1:Int = Int.random(in: -(Int(frame.size.width/2))...(Int(frame.size.width/2)))
+        let randomY2:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
+        let randomX2:Int = Int.random(in: -(Int(frame.size.width/2))...(Int(frame.size.width/2)))
+        let randomY3:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
+        let randomX3:Int = Int.random(in: -(Int(frame.size.width/2))...(Int(frame.size.width/2)))
+        let randomY4:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
+        let randomX4:Int = Int.random(in: -(Int(frame.size.width/2))...(Int(frame.size.width/2)))
+        
+        let randomSpawn1 = CGPoint(x: biker.position.x + CGFloat(randomX1), y: biker.position.y + CGFloat(randomY1))
+        let randomSpawn2 = CGPoint(x: biker.position.x + CGFloat(randomX2), y: biker.position.y + CGFloat(randomY2))
+        let randomSpawn3 = CGPoint(x: biker.position.x + CGFloat(randomX3), y: biker.position.y + CGFloat(randomY3))
+        let randomSpawn4 = CGPoint(x: biker.position.x + CGFloat(randomX4), y: biker.position.y + CGFloat(randomY4))
+        
+        let randomSpawnTime1 = Int.random(in: 0...4)
+        let randomSpawnTime2 = Int.random(in: 0...4)
+        let randomSpawnTime3 = Int.random(in: 0...4)
+        let randomSpawnTime4 = Int.random(in: 0...4)
+        
+        obShadow1.position = randomSpawn1
+        obShadow1.alpha = 0.1
+        
+        obShadow2.position = randomSpawn2
+        obShadow2.alpha = 0.1
+        
+        obShadow3.position = randomSpawn3
+        obShadow3.alpha = 0.1
+
+        obShadow4.position = randomSpawn4
+        obShadow4.alpha = 0.1
+    
+        obLanded1.fillColor = .red
+        obLanded1.position = obShadow1.position
+        obLanded1.physicsBody = SKPhysicsBody(circleOfRadius: 150)
+        obLanded1.physicsBody?.categoryBitMask = obLandedCategory
+        obLanded1.physicsBody?.collisionBitMask = 0
+        obLanded1.physicsBody?.contactTestBitMask = bikerCategory
+        
+        
+        obLanded2.fillColor = .red
+        obLanded2.position = obShadow2.position
+        obLanded2.physicsBody = SKPhysicsBody(circleOfRadius: 150)
+        obLanded2.physicsBody?.categoryBitMask = obLandedCategory
+        obLanded2.physicsBody?.collisionBitMask = 0
+        obLanded2.physicsBody?.contactTestBitMask = bikerCategory
+        
+        obLanded3.fillColor = .red
+        obLanded3.position = obShadow3.position
+        obLanded3.physicsBody = SKPhysicsBody(circleOfRadius: 150)
+        obLanded3.physicsBody?.categoryBitMask = obLandedCategory
+        obLanded3.physicsBody?.collisionBitMask = 0
+        obLanded3.physicsBody?.contactTestBitMask = bikerCategory
+        
+        obLanded4.fillColor = .red
+        obLanded4.position = obShadow4.position
+        obLanded4.physicsBody = SKPhysicsBody(circleOfRadius: 150)
+        obLanded4.physicsBody?.categoryBitMask = obLandedCategory
+        obLanded4.physicsBody?.collisionBitMask = 0
+        obLanded4.physicsBody?.contactTestBitMask = bikerCategory
+        
+        self.run(SKAction.wait(forDuration: TimeInterval(randomSpawnTime1))) {
+            
+            let remove = SKAction.removeFromParent()
+            let spinShadow = SKAction.rotate(toAngle: CGFloat(Double.pi*2), duration: 2)
+            let fadeIn = SKAction.fadeIn(withDuration: 2)
+            let sequence = SKAction.sequence([spinShadow,remove])
+            
+            self.addChild(obShadow1)
+            
+            obShadow1.run(fadeIn)
+            obShadow1.run(sequence)
+            
+            self.run(SKAction.wait(forDuration:2)){
+                
+                let remove = SKAction.removeFromParent()
+                let delay = SKAction.wait(forDuration: 0.5)
+                let sequence = SKAction.sequence([delay, remove])
+                
+                self.addChild(obLanded1)
+                obLanded1.run(sequence)
+                
+            }
+            
+        }
+        
+        self.run(SKAction.wait(forDuration: TimeInterval(randomSpawnTime2))) {
+            
+            let remove = SKAction.removeFromParent()
+            let spinShadow = SKAction.rotate(toAngle: CGFloat(Double.pi*2), duration: 2)
+            let fadeIn = SKAction.fadeIn(withDuration: 2)
+            let sequence = SKAction.sequence([spinShadow,remove])
+            
+            self.addChild(obShadow2)
+            
+            obShadow2.run(fadeIn)
+            obShadow2.run(sequence)
+            
+            self.run(SKAction.wait(forDuration:2)){
+                
+                let remove = SKAction.removeFromParent()
+                let delay = SKAction.wait(forDuration: 0.5)
+                let sequence = SKAction.sequence([delay, remove])
+                
+                self.addChild(obLanded2)
+                obLanded2.run(sequence)
+                
+            }
+            
+        }
+        
+        self.run(SKAction.wait(forDuration: TimeInterval(randomSpawnTime3))) {
+            
+            let remove = SKAction.removeFromParent()
+            let spinShadow = SKAction.rotate(toAngle: CGFloat(Double.pi*2), duration: 2)
+            let fadeIn = SKAction.fadeIn(withDuration: 2)
+            let sequence = SKAction.sequence([spinShadow,remove])
+            
+            self.addChild(obShadow3)
+            
+            obShadow3.run(fadeIn)
+            obShadow3.run(sequence)
+            
+            self.run(SKAction.wait(forDuration:2)){
+                
+                let remove = SKAction.removeFromParent()
+                let delay = SKAction.wait(forDuration: 0.5)
+                let sequence = SKAction.sequence([delay, remove])
+                
+                self.addChild(obLanded3)
+                obLanded3.run(sequence)
+                
+            }
+            
+        }
+        
+        self.run(SKAction.wait(forDuration: TimeInterval(randomSpawnTime4))) {
+            
+            let remove = SKAction.removeFromParent()
+            let spinShadow = SKAction.rotate(toAngle: CGFloat(Double.pi*2), duration: 2)
+            let fadeIn = SKAction.fadeIn(withDuration: 2)
+            let sequence = SKAction.sequence([spinShadow,remove])
+            
+            self.addChild(obShadow4)
+            
+            obShadow4.run(fadeIn)
+            obShadow4.run(sequence)
+            
+            self.run(SKAction.wait(forDuration:2)){
+                
+                let remove = SKAction.removeFromParent()
+                let delay = SKAction.wait(forDuration: 0.5)
+                let sequence = SKAction.sequence([delay, remove])
+                
+                self.addChild(obLanded4)
+                obLanded4.run(sequence)
+                
+            }
+            
+        }
+
+        
+        print("obstacle5")
+        
+    }
+    
+    @objc func callObstacleArray() {
+        let callNumber = arc4random_uniform(5)
+        //let callNumber = 4
+        
+        if callNumber == UInt32(0) {
+            obstacle1()
+        } else if callNumber == UInt32(1) {
+            obstacle2()
+        } else if callNumber == UInt32(2) {
+            obstacle3()
+        } else if callNumber == UInt32(3) {
+            obstacle4()
+        } else if callNumber == UInt32(4) {
+            obstacle5()
+        }
+        
+        print(callNumber)
+        return
+    }
+    //old
+    
+    func bulletsFiring() {
+        
+        let bullet1 = SKShapeNode(circleOfRadius: 25)
+        let bullet2 = SKShapeNode(circleOfRadius: 25)
+        let bullet3 = SKShapeNode(circleOfRadius: 25)
+        let bullet4 = SKShapeNode(circleOfRadius: 25)
+        
+        bullet1.position = obShip1.position
+        bullet1.fillColor = .white
+        bullet1.physicsBody = SKPhysicsBody(circleOfRadius: 25)
+        bullet1.physicsBody?.collisionBitMask = 0
+        addChild(bullet1)
+        let bulletX:Float = Float(bullet1.position.x - biker.position.x)
+        let bulletY:Float = Float(bullet1.position.y - biker.position.y)
+        let speedX = Double((Float(500)*(bulletX))/sqrt(pow((bulletX), 2) + pow((bulletY), 2)))
+        let speedY = Double((Float(500)*(bulletY))/sqrt(pow((bulletX), 2) + pow((bulletY), 2)))
+        
+        bullet1.physicsBody?.velocity = CGVector(dx: -speedX, dy: -speedY)
+        
+        if bullet1.position.x < -frame.size.width || bullet1.position.x > 2.5*frame.size.width {
+            bullet1.removeFromParent()
+        }
+        
+        bullet2.position = obShip2.position
+        bullet2.fillColor = .white
+        bullet2.physicsBody = SKPhysicsBody(circleOfRadius: 25)
+        bullet2.physicsBody?.collisionBitMask = 0
+        addChild(bullet2)
+        let bulletX2:Float = Float(bullet2.position.x - biker.position.x)
+        let bulletY2:Float = Float(bullet2.position.y - biker.position.y)
+        let speedX2 = Double((Float(500)*(bulletX2))/sqrt(pow((bulletX2), 2) + pow((bulletY2), 2)))
+        let speedY2 = Double((Float(500)*(bulletY2))/sqrt(pow((bulletX2), 2) + pow((bulletY2), 2)))
+        
+        bullet2.physicsBody?.velocity = CGVector(dx: -speedX2, dy: -speedY2)
+        
+        if bullet2.position.x < -frame.size.width || bullet2.position.x > 2.5*frame.size.width {
+            bullet2.removeFromParent()
+        }
+        
+        bullet3.position = obShip3.position
+        bullet3.fillColor = .white
+        bullet3.physicsBody = SKPhysicsBody(circleOfRadius: 25)
+        bullet3.physicsBody?.collisionBitMask = 0
+        addChild(bullet3)
+        let bulletX3:Float = Float(bullet3.position.x - biker.position.x)
+        let bulletY3:Float = Float(bullet3.position.y - biker.position.y)
+        let speedX3 = Double((Float(500)*(bulletX3))/sqrt(pow((bulletX3), 2) + pow((bulletY3), 2)))
+        let speedY3 = Double((Float(500)*(bulletY3))/sqrt(pow((bulletX3), 2) + pow((bulletY3), 2)))
+        
+        bullet3.physicsBody?.velocity = CGVector(dx: -speedX3, dy: -speedY3)
+        
+        if bullet3.position.x < -frame.size.width || bullet3.position.x > 2.5*frame.size.width {
+            bullet3.removeFromParent()
+        }
+        
+        bullet4.position = obShip4.position
+        bullet4.fillColor = .white
+        bullet4.physicsBody = SKPhysicsBody(circleOfRadius: 25)
+        bullet4.physicsBody?.collisionBitMask = 0
+        addChild(bullet4)
+        let bulletX4:Float = Float(bullet4.position.x - biker.position.x)
+        let bulletY4:Float = Float(bullet4.position.y - biker.position.y)
+        let speedX4 = Double((Float(500)*(bulletX4))/sqrt(pow((bulletX4), 2) + pow((bulletY4), 2)))
+        let speedY4 = Double((Float(500)*(bulletY4))/sqrt(pow((bulletX4), 2) + pow((bulletY4), 2)))
+        
+        bullet4.physicsBody?.velocity = CGVector(dx: -speedX4, dy: -speedY4)
+        
+        if bullet4.position.x < -frame.size.width || bullet4.position.x > 2.5*frame.size.width {
+            bullet4.removeFromParent()
+        }
+        
+        bullet1.physicsBody?.categoryBitMask = obBulletCategory
+        bullet1.physicsBody?.collisionBitMask = 0
+        bullet1.physicsBody?.contactTestBitMask = bikerCategory
+        
+        bullet2.physicsBody?.categoryBitMask = obBulletCategory
+        bullet2.physicsBody?.collisionBitMask = 0
+        bullet2.physicsBody?.contactTestBitMask = bikerCategory
+        
+        bullet3.physicsBody?.categoryBitMask = obBulletCategory
+        bullet3.physicsBody?.collisionBitMask = 0
+        bullet3.physicsBody?.contactTestBitMask = bikerCategory
+        
+        bullet4.physicsBody?.categoryBitMask = obBulletCategory
+        bullet4.physicsBody?.collisionBitMask = 0
+        bullet4.physicsBody?.contactTestBitMask = bikerCategory
+        
+    }
+    
+    func shieldBuild() {
         print("shield")
         shield.strokeColor = .blue
         shield.lineWidth = 2
@@ -645,30 +1435,44 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    func bikerCar() {
-
-        if bCar == true {
-            currentHealth -= (10 - (resistUpNumber*bikerResistance))
-            bCar = false
-            print("biker-car")
-        } else{
-            return
-        }
+    func phaseOut() {
+        print("phase out on")
     }
     
-    func bikerPuddle() {
-
+    func bikerContact() {
+        
+        if bObNode == true {
+            currentHealth -= (10 - (resistUpNumber*bikerResistance))
+            bObNode = false
+        }
+        
+        if bObOval == true {
+            currentHealth -= (10 - (resistUpNumber*bikerResistance))
+            bObNode = false
+        }
+        
+        if bObRock == true{
+            currentHealth -= (10 - (resistUpNumber*bikerResistance))
+            bObRock = false
+        }
+        
+        if bObBullet == true{
+            currentHealth -= (10 - (resistUpNumber*bikerResistance))
+            bObBullet = false
+        }
+        
+        if bObLanded == true{
+            currentHealth -= (50 - (resistUpNumber*bikerResistance))
+            bObLanded = false
+        }
+        
+        
         if bPuddle == true {
             if activeArray.count >= 1 {
                 activeArray.removeLast()
                 bPuddle = false
-            } else {
-                return
             }
         }
-    }
-    
-    func bikerSpeed() {
         
         if bSpeed == true {
             if activeArray.count < 5 {
@@ -677,14 +1481,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 pickUpNumber += 1
                 velocityDy -= 5
                 bSpeed = false
-            } else{
-                return
             }
         }
-        
-    }
-    
-    func bikerResist() {
         
         if bResist == true {
             if activeArray.count < 5 {
@@ -693,13 +1491,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 pickUpNumber += 1
                 velocityDy -= 5
                 bResist = false
-            } else{
-                return
             }
         }
-    }
-    
-    func bikerHeal() {
         
         if bHeal == true {
             if activeArray.count < 5 {
@@ -708,54 +1501,74 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 pickUpNumber += 1
                 velocityDy -= 5
                 bHeal = false
-            } else{
-                return
             }
         }
+        
     }
     
     func emitterPositions() {
-        speedParticlesRight?.position.x = biker.position.x + frame.size.width/2
-        speedParticlesRight?.position.y = frame.size.height/2
-        speedParticles?.position.x = biker.position.x - frame.size.width/2
-        speedParticles?.position.y = frame.size.height/2
-        resistParticlesRight?.position.x = biker.position.x + frame.size.width/2
-        resistParticlesRight?.position.y = frame.size.height/2
-        resistParticles?.position.x = biker.position.x - frame.size.width/2
-        resistParticles?.position.y = frame.size.height/2
-        healParticlesRight?.position.x = biker.position.x + frame.size.width/2
-        healParticlesRight?.position.y = frame.size.height/2
-        healParticles?.position.x = biker.position.x - frame.size.width/2
-        healParticles?.position.y = frame.size.height/2
+        speedParticlesRight?.position.x = cameraNode.position.x + frame.size.width/2
+        speedParticlesRight?.position.y = cameraNode.position.y
+        speedParticles?.position.x = cameraNode.position.x - frame.size.width/2
+        speedParticles?.position.y = cameraNode.position.y
+        resistParticlesRight?.position.x = cameraNode.position.x + frame.size.width/2
+        resistParticlesRight?.position.y = cameraNode.position.y
+        resistParticles?.position.x = cameraNode.position.x - frame.size.width/2
+        resistParticles?.position.y = cameraNode.position.y
+        healParticlesRight?.position.x = cameraNode.position.x + frame.size.width/2
+        healParticlesRight?.position.y = cameraNode.position.y
+        healParticles?.position.x = cameraNode.position.x - frame.size.width/2
+        healParticles?.position.y = cameraNode.position.y
     }
     
     func rectanglePositions() {
-        rect1.position.x = biker.position.x + frame.size.width * 0.066
-        rect2.position.x = biker.position.x + frame.size.width * 0.156
-        rect3.position.x = biker.position.x + frame.size.width * 0.246
-        rect4.position.x = biker.position.x + frame.size.width * 0.336
-        rect5.position.x = biker.position.x + frame.size.width * 0.426
-        rect6.position.x = biker.position.x - frame.size.width * 0.407
+        rect1.position.x = cameraNode.position.x + frame.size.width * 0.066
+        rect1.position.y = cameraNode.position.y + (frame.size.height * 0.9335 - frame.size.height/2)
+        rect2.position.x = cameraNode.position.x + frame.size.width * 0.156
+        rect2.position.y = cameraNode.position.y + (frame.size.height * 0.9335 - frame.size.height/2)
+        rect3.position.x = cameraNode.position.x + frame.size.width * 0.246
+        rect3.position.y = cameraNode.position.y + (frame.size.height * 0.9335 - frame.size.height/2)
+        rect4.position.x = cameraNode.position.x + frame.size.width * 0.336
+        rect4.position.y = cameraNode.position.y + (frame.size.height * 0.9335 - frame.size.height/2)
+        rect5.position.x = cameraNode.position.x + frame.size.width * 0.426
+        rect5.position.y = cameraNode.position.y + (frame.size.height * 0.9335 - frame.size.height/2)
+        rect6.position.x = cameraNode.position.x - frame.size.width * 0.407
+        rect6.position.y = cameraNode.position.y + (frame.size.height * 0.9335 - frame.size.height/2)
+    }
+    
+    func cameraPositions () {
+        cameraNode.position = biker.position
+        if cameraNode.position.x <= 0 {
+            cameraNode.position.x = 0
+        } else if cameraNode.position.x >= frame.size.width{
+            cameraNode.position.x = frame.size.width
+        }
+        if cameraNode.position.y <= frame.size.height * (1/3) {
+            cameraNode.position.y = frame.size.height * (1/3)
+        } else if cameraNode.position.y >= frame.size.height * (2/3) {
+            cameraNode.position.y = frame.size.height * (2/3)
+        }
+        
     }
     
     func bombBoxPositions() {
 
         if moveRight == true {
             movementValue += 5
-            bombBox.position.x = (biker.position.x + CGFloat(movementValue))
+            bombBox.position.x = (cameraNode.position.x + CGFloat(movementValue))
         }
         
         if moveLeft == true {
             movementValue -= 5
-            bombBox.position.x = (biker.position.x + CGFloat(movementValue))
+            bombBox.position.x = (cameraNode.position.x + CGFloat(movementValue))
         }
         
-        if bombBox.position.x > (biker.position.x + frame.size.width/2) {
+        if bombBox.position.x > (cameraNode.position.x + frame.size.width/2) {
             moveRight = false
             moveLeft = true
         }
         
-        if bombBox.position.x < (biker.position.x - frame.size.width/2) {
+        if bombBox.position.x < (cameraNode.position.x - frame.size.width/2) {
             moveLeft = false
             moveRight = true
         }
@@ -772,10 +1585,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let contactMask = contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask
         
         switch contactMask {
-        case bikerCategory | carCategory:
-            
-            contact.bodyB.node?.removeFromParent()
-            bCar = true
             
         case bikerCategory | puddleCategory:
 
@@ -804,9 +1613,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             shieldOn = false
             
-        case borderCategory | bikerCategory:
+        case bikerCategory | obNodeCategory:
             
-            return
+            contact.bodyB.node?.removeFromParent()
+            bObNode = true
+            
+        case bikerCategory | obOvalCategory:
+            
+            bObOval = true
+            
+        case bikerCategory | obRockCategory:
+            
+            contact.bodyB.node?.removeFromParent()
+            bObRock = true
+            
+        case bikerCategory | obBulletCategory:
+            
+            contact.bodyB.node?.removeFromParent()
+            bObBullet = true
+            
+        case bikerCategory | obLandedCategory:
+            
+            contact.bodyB.node?.removeFromParent()
+            bObLanded = true
             
         case bombCategory | carCategory:
             
@@ -826,60 +1655,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func bikerBuild() {
         
-        biker.position = CGPoint(x: frame.size.width/2, y: frame.size.height/6)
+        biker.position = CGPoint(x: frame.size.width/2, y: frame.size.height/2)
         biker.zPosition = 10
         biker.physicsBody = SKPhysicsBody(texture: biker.texture!, size: biker.texture!.size())
         biker.physicsBody?.affectedByGravity = false
         biker.physicsBody?.isDynamic = true
         biker.name = "BIKER"
         biker.physicsBody?.categoryBitMask = bikerCategory
-        biker.physicsBody?.contactTestBitMask = carCategory | borderCategory
-        biker.physicsBody?.collisionBitMask = borderCategory
+        biker.physicsBody?.contactTestBitMask = carCategory | boundaryCategory
+        biker.physicsBody?.collisionBitMask = 0
         biker.physicsBody?.usesPreciseCollisionDetection = true
-        //new
+
         //biker.lightingBitMask = 1
         //biker.shadowCastBitMask = 0
         //biker.shadowedBitMask = 1
-        //old
-    }
-    
-    func moveBikerRight(){
 
-        biker.physicsBody?.velocity = CGVector(dx: 300 + (speedUpNumber*speedUpBiker), dy: 0)
-        let bikerRight = SKTexture(imageNamed: "biker right")
-        
-        let rotateRight = SKAction.rotate(toAngle: -0.3, duration: 0.5)
-        let steerRight = SKAction.animate(with: [bikerRight], timePerFrame: 0.1)
-        
-        biker.run(rotateRight)
-        biker.run(steerRight)
-        
-    }
-    
-    func moveBikerLeft(){
-        biker.physicsBody?.velocity = CGVector(dx: -300 - (speedUpNumber*speedUpBiker), dy: 0)
-        let bikerLeft = SKTexture(imageNamed: "biker left")
-        
-        let rotateLeft = SKAction.rotate(toAngle: 0.3, duration: 0.5)
-        let steerLeft = SKAction.animate(with: [bikerLeft], timePerFrame: 0.1)
-        
-        biker.run(rotateLeft)
-        biker.run(steerLeft)
-        
-    }
-    
-    func bikerStop(){
-        
-        biker.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
-        
-        let bikerCenter = SKTexture(imageNamed: "biker clean")
-        
-        let rotateCenter = SKAction.rotate(toAngle: 0, duration: 0.4)
-        let steerCenter = SKAction.animate(with: [bikerCenter], timePerFrame: 0.1)
-        
-        biker.run(rotateCenter)
-        biker.run(steerCenter)
-        
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -887,45 +1677,62 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         for t in touches{
             let location = t.location(in: self)
             
+            let bikerX:Float = Float(location.x - biker.position.x)
+            let bikerY:Float = Float(location.y - biker.position.y)
+            let speedX = Double((Float(300 + (speedUpBiker*speedUpNumber))*(bikerX))/sqrt(pow((bikerX), 2) + pow((bikerY), 2)))
+            let speedY = Double((Float(300 + (speedUpBiker*speedUpNumber))*(bikerY))/sqrt(pow((bikerX), 2) + pow((bikerY), 2)))
+            
+            biker.physicsBody?.velocity = CGVector(dx: speedX, dy: speedY)
+            
             if button.contains(location){
                 if bombBoxOn == true {
                 bombFire = true
                 fireBomb()
                 bombBoxOn = false
-                
                 }
-                
-            } else if location.x < biker.position.x{
-                moveBikerLeft()
-                
-            } else {
-                moveBikerRight()
+                if phaseOutOn == true{
+                    phaseOut()
+                    phaseOutOn = false
+                }
             }
         }
     }
     
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        bikerStop()
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        for t in touches {
+            let location = t.location(in: self)
+            let bikerX:Float = Float(location.x - biker.position.x)
+            let bikerY:Float = Float(location.y - biker.position.y)
+            let speedX = Double((Float(300 + (speedUpBiker*speedUpNumber))*(bikerX))/sqrt(pow((bikerX), 2) + pow((bikerY), 2)))
+            let speedY = Double((Float(300 + (speedUpBiker*speedUpNumber))*(bikerY))/sqrt(pow((bikerX), 2) + pow((bikerY), 2)))
+            
+            biker.physicsBody?.velocity = CGVector(dx: speedX, dy: speedY)
+            
+        }
     }
     
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        biker.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
+    }
+
     override func update(_ currentTime: TimeInterval){
-        healthLabel.position.x = biker.position.x + frame.size.width*(9/50)
-        healthBar.position.x = biker.position.x + frame.size.width/4
-        shield.position.x = biker.position.x
-        button.position.x = biker.position.x
-        cameraNode.position.x = biker.position.x
-        starfieldNode.position.x = biker.position.x
-        starfieldNode2.position.x = biker.position.x
+        healthLabel.position.x = cameraNode.position.x + frame.size.width*(9/50)
+        healthLabel.position.y = cameraNode.position.y + (frame.size.height * 0.962 - frame.size.height/2)
+        healthBar.position.x = cameraNode.position.x + frame.size.width/4
+        healthBar.position.y = cameraNode.position.y + (frame.size.height * 0.97 - frame.size.height/2)
+        shield.position = biker.position
+        button.position.x = cameraNode.position.x
+        button.position.y = cameraNode.position.y - frame.size.height*(24/50)
+        starfieldNode.position.x = cameraNode.position.x
+        starfieldNode2.position.x = cameraNode.position.x
+        cameraPositions()
         emitterPositions()
         rectanglePositions()
         bombBoxPositions()
         healthAnimation()
+        bikerContact()
         readyArray()
-        bikerCar()
-        bikerPuddle()
-        bikerSpeed()
-        bikerResist()
-        bikerHeal()
         return
     }
 
