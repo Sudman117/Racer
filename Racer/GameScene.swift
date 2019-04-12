@@ -50,6 +50,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var speedUpGame:Double = 5
     var obstacleFrequency:Double = (0.5)
     
+    var threeSecondOn = true
+    var threeSecondRunTime:Float = 0
+    
     var shieldOn:Bool = false
     var buttonOn:Bool = false
     var bombBoxOn:Bool = false
@@ -97,6 +100,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var gameTimer4:Timer!
     var gameTimer7:Timer!
     var gameTimer8:Timer!
+    var threeSecondTimer:Timer!
     var gameOver = false
     
     let bikerCategory:UInt32 = 1 << 1
@@ -295,14 +299,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if currentHealth < 500 {
             currentHealth += (bikerHealing*healUpNumber)
         }
-        
-        if phaseOutOn == false {
-            let delay = SKAction.wait(forDuration: 3)
-            let on = SKAction.run {self.phaseOutOn = true}
-            let sequence = SKAction.sequence([delay,on])
-            self.run(sequence)
-        }
-        
+
         if speedUpNumber == 5 {
             if teleportOn == false {
                 let delay = SKAction.wait(forDuration: 3)
@@ -319,13 +316,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             rect6.isHidden = false
         }
         else if speedUpNumber == 4 && resistUpNumber == 1{
-            //var bikercategory, alpha value
-            if phaseOutOn == false {
-                let delay = SKAction.wait(forDuration: 3)
-                let on = SKAction.run {self.teleportOn = true}
-                let sequence = SKAction.sequence([delay,on])
-                self.run(sequence)
-            }
+            phaseOutOn = true
             rect6.isHidden = false
         } else if speedUpNumber == 4 && healUpNumber == 1{
             rect6.isHidden = false
@@ -374,8 +365,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             rect6.isHidden = false
         } else {
             rect6.isHidden = true
+            phaseOutOn = false
+            bombFire = false
         }
-        bombFire = false
+
 
     }
     
@@ -587,9 +580,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         gameTimer4 = Timer.scheduledTimer(timeInterval: 700, target: self, selector: #selector(addPowerUps), userInfo: nil, repeats: true)
         gameTimer7 = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(runPowerUpCombinations), userInfo: nil, repeats: true)
         gameTimer8 = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(updateArrayImage), userInfo: nil, repeats: true)
+        threeSecondTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(threeSecondPress), userInfo: nil, repeats: true)
         
 }
     
+    @objc func threeSecondPress() {
+        threeSecondRunTime += 1
+        if threeSecondRunTime >= 3{
+        threeSecondOn = true
+        }
+        print(threeSecondRunTime)
+    }
     
     @objc func addPuddle() {
         
@@ -1411,12 +1412,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func makeShield() {
         
-        if shieldOn == false {
-            let delay = SKAction.wait(forDuration: 5)
+        self.run(SKAction.wait(forDuration:5)){
             let on = SKAction.run({self.shieldBuild()})
-            let sequence = SKAction.sequence([delay, on])
-            run(sequence)
-            shieldOn = true
+            self.run(on)
+            self.shieldOn = true
         }
     }
     
@@ -1436,7 +1435,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func phaseOut() {
-        print("phase out on")
+        
+        biker.physicsBody?.categoryBitMask = 0
+        biker.alpha = 0.5
+        
+        
+        self.run(SKAction.wait(forDuration: 1)) {
+            self.biker.physicsBody?.categoryBitMask = self.bikerCategory
+            self.biker.alpha = 1.0
+        }
+        print("phase out fire")
     }
     
     func bikerContact() {
@@ -1685,16 +1693,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             biker.physicsBody?.velocity = CGVector(dx: speedX, dy: speedY)
             
             if button.contains(location){
+                
+                
                 if bombBoxOn == true {
                 bombFire = true
                 fireBomb()
                 bombBoxOn = false
                 }
-                if phaseOutOn == true{
-                    phaseOut()
-                    phaseOutOn = false
+                if threeSecondOn == true{
+                    if phaseOutOn == true{
+                            phaseOut()
+                            threeSecondRunTime = 0
+                            threeSecondOn = false
+                    
                 }
+                print("button press")
             }
+        }
         }
     }
     
