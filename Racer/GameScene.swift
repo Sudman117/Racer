@@ -11,7 +11,7 @@ import CoreMotion
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
-    let biker = SKSpriteNode(imageNamed: "biker clean")
+    let biker = SKSpriteNode(imageNamed: "ship")
     let shield = SKShapeNode(circleOfRadius: 200)
     let button = SKShapeNode(rectOf: CGSize(width: 1080, height: 110))
     
