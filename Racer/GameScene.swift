@@ -13,6 +13,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     let biker = SKSpriteNode(imageNamed: "ship")
     let shield = SKShapeNode(circleOfRadius: 200)
+    let zapper = SKShapeNode(circleOfRadius: 400)
+    let roar = SKSpriteNode(imageNamed: "reticule")
     let button = SKShapeNode(rectOf: CGSize(width: 1080, height: 110))
     
     let obOval1Fade = SKShapeNode(ellipseOf: CGSize(width: 1800, height: 200))
@@ -21,12 +23,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let obOval2Real = SKShapeNode(ellipseOf: CGSize(width: 1800, height: 180))
     let obOval3Fade = SKShapeNode(ellipseOf: CGSize(width: 1800, height: 200))
     let obOval3Real = SKShapeNode(ellipseOf: CGSize(width: 1800, height: 180))
-    
+
     let obShip1 = SKShapeNode(rectOf: CGSize(width: 250, height: 250))
     let obShip2 = SKShapeNode(rectOf: CGSize(width: 250, height: 250))
     let obShip3 = SKShapeNode(rectOf: CGSize(width: 250, height: 250))
     let obShip4 = SKShapeNode(rectOf: CGSize(width: 250, height: 250))
     
+    //implement
     var difficulty2:Bool = false
     var difficulty3:Bool = false
     var difficulty4:Bool = false
@@ -51,28 +54,33 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var obstacleFrequency:Double = (0.5)
     
     var threeSecondOn = true
+    var fiveSecondOn = true
     var threeSecondRunTime:Float = 0
+    var fiveSecondRunTime:Float = 0
     
     var shieldOn:Bool = false
+    var zapperOn:Bool = false
     var buttonOn:Bool = false
     var bombBoxOn:Bool = false
     var bombFire:Bool = false
     var teleportOn:Bool = false
     var phaseOutOn:Bool = false
+    var invulnerableOn:Bool = false
+    var roarOn:Bool = true
     
-    var bCar:Bool = false
     var bPuddle:Bool = false
     var bHeal:Bool = false
     var bResist:Bool = false
     var bSpeed:Bool = false
-    var bObNode:Bool = false
-    var bObOval:Bool = false
-    var bObRock:Bool = false
-    var bObBullet:Bool = false
-    var bObLanded:Bool = false
+    var contactSmall:Bool = false
+    var contactMedium:Bool = false
+    var contactLarge:Bool = false
     
+    var touchDetected:Bool = false
     var moveRight:Bool = true
     var moveLeft:Bool = false
+    var touchLocationX:CGFloat = 0
+    var touchLocationY:CGFloat = 0
     
     var healthBar = SKSpriteNode()
     var healthLabel = SKLabelNode()
@@ -101,22 +109,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var gameTimer7:Timer!
     var gameTimer8:Timer!
     var threeSecondTimer:Timer!
+    var fiveSecondTimer:Timer!
     var gameOver = false
     
     let bikerCategory:UInt32 = 1 << 1
-    let carCategory:UInt32 = 1 << 2
-    let boundaryCategory:UInt32 = 1 << 3
-    let puddleCategory:UInt32 = 1 << 4
-    let speedCategory:UInt32 = 1 << 5
-    let resistCategory:UInt32 = 1 << 6
-    let healCategory:UInt32 = 1 << 7
-    let shieldCategory:UInt32 = 1 << 8
-    let bombCategory:UInt32 = 1 << 9
-    let obNodeCategory:UInt32 = 1 << 10
-    let obOvalCategory:UInt32 = 1 << 11
-    let obRockCategory:UInt32 = 1 << 12
-    let obBulletCategory:UInt32 = 1 << 13
-    let obLandedCategory:UInt32 = 1 << 14
+    let puddleCategory:UInt32 = 1 << 2
+    let speedCategory:UInt32 = 1 << 3
+    let resistCategory:UInt32 = 1 << 4
+    let healCategory:UInt32 = 1 << 5
+    let shieldCategory:UInt32 = 1 << 6
+    let bombCategory:UInt32 = 1 << 7
+    let zapperCategory:UInt32 = 1 << 8
+    let smallDamageCategory:UInt32 = 1 << 9
+    let mediumDamageCategory:UInt32 = 1 << 10
+    let largeDamageCategory:UInt32 = 1 << 11
+    let roarCatreogry:UInt32 = 1 << 12
     
     var activeArray = [String]()
     
@@ -132,18 +139,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         button.fillColor = UIColor.red
     }
     
-    var doubleTapRecognizer: UITapGestureRecognizer {
-        
-        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(doubleTapDetected))
-        
-        tapRecognizer.numberOfTapsRequired = 2
-        
-        return tapRecognizer
-        //does not work :p
-    }
-    
     @objc func doubleTapDetected() {
-        print("double tap")
+        
+        let bikerX:CGFloat = CGFloat(touchLocationX - biker.position.x)
+        let bikerY:CGFloat = CGFloat(touchLocationY - biker.position.y)
+        let teleportX = Double((CGFloat(300)*(bikerX))/sqrt(pow((bikerX), 2) + pow((bikerY), 2)))
+        let teleportY = Double((CGFloat(300)*(bikerY))/sqrt(pow((bikerX), 2) + pow((bikerY), 2)))
+        
+        biker.position.x = (biker.position.x + CGFloat(teleportX))
+        biker.position.y = (biker.position.y + CGFloat(teleportY))
+        
+        print("teleport")
     }
     
     @objc func addSpeedUp() {
@@ -295,85 +301,82 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(starfieldNode2)
     }
     
-    func powerUpCombinations() {
+    @objc func powerUpCombinations() {
         if currentHealth < 500 {
             currentHealth += (bikerHealing*healUpNumber)
         }
-
-        if speedUpNumber == 5 {
-            if teleportOn == false {
-                let delay = SKAction.wait(forDuration: 3)
-                let on = SKAction.run {self.teleportOn = true}
-                let sequence = SKAction.sequence([delay,on])
-                self.run(sequence)
-            }
+        
+        let abilityArray = [speedUpNumber,resistUpNumber,healUpNumber]
+        
+        switch abilityArray {
+        
+        case [5,0,0]:
+            teleportOn = true
             rect6.isHidden = false
-        } else if healUpNumber == 5 {
-            rect6.isHidden = false
-        } else if resistUpNumber == 5 {
+        case [0,5,0]:
             makeShield()
             rect6.texture = SKTexture(imageNamed: "resist icon")
             rect6.isHidden = false
-        }
-        else if speedUpNumber == 4 && resistUpNumber == 1{
+        case [0,0,5]:
+            rect6.isHidden = false
+        case [4,1,0]:
             phaseOutOn = true
             rect6.isHidden = false
-        } else if speedUpNumber == 4 && healUpNumber == 1{
+        case [4,0,1]:
             rect6.isHidden = false
-        } else if speedUpNumber == 3 && resistUpNumber == 2{
+        case [1,0,4]:
+            //add line for zap, hide circle
+            makeZapper()
             rect6.isHidden = false
-        } else if speedUpNumber == 3 && healUpNumber == 2{
+        case [0,1,4]:
+            //shovel
             rect6.isHidden = false
-        } else if speedUpNumber == 3 && resistUpNumber == 1 && healUpNumber == 1 {
+        case [0,4,1]:
+            invulnerableOn = true
             rect6.isHidden = false
-        } else if speedUpNumber == 2 && resistUpNumber == 3 {
+        case [1,4,0]:
+            //roar
+            roarOn = true
             rect6.isHidden = false
-        } else if speedUpNumber == 2 && resistUpNumber == 2 && healUpNumber == 1 {
+        case [3,2,0]:
+            rect6.isHidden = false
+        case [3,0,2]:
+            rect6.isHidden = false
+        case [2,3,0]:
+            rect6.isHidden = false
+        case [0,3,2]:
+            rect6.isHidden = false
+        case [0,2,3]:
+            rect6.isHidden = false
+        case [2,0,3]:
+            rect6.isHidden = false
+        case [3,1,1]:
+            rect6.isHidden = false
+        case [1,1,3]:
+            rect6.isHidden = false
+        case [1,3,1]:
+            rect6.isHidden = false
+        case [2,2,1]:
             
-            if bombBoxOn == false {
-                let delay = SKAction.wait(forDuration: 5)
-                let on = SKAction.run {self.bombBoxOn = true}
-                let sequence = SKAction.sequence([delay,on])
-                self.run(sequence)
-                bombBox.isHidden = true
-            } else if bombBoxOn == true {
+            if fiveSecondOn == true {
+                bombBoxOn = true
                 bombBox.isHidden = false
             }
-            
             rect6.isHidden = false
-        } else if speedUpNumber == 2 && resistUpNumber == 1 && healUpNumber == 2 {
+        case [2,1,2]:
             rect6.isHidden = false
-        }else if speedUpNumber == 2 && healUpNumber == 3 {
+        case [1,2,2]:
             rect6.isHidden = false
-        } else if speedUpNumber == 1 && resistUpNumber == 4{
-            rect6.isHidden = false
-        } else if speedUpNumber == 1 && resistUpNumber == 3 && healUpNumber == 1 {
-            rect6.isHidden = false
-        } else if speedUpNumber == 1 && resistUpNumber == 2 && healUpNumber == 2 {
-            rect6.isHidden = false
-        } else if speedUpNumber == 1 && resistUpNumber == 1 && healUpNumber == 3 {
-            rect6.isHidden = false
-        } else if speedUpNumber == 1 && healUpNumber == 4 {
-            rect6.isHidden = false
-        } else if healUpNumber == 2 && resistUpNumber == 3 {
-            rect6.isHidden = false
-        } else if healUpNumber == 3 && resistUpNumber == 2 {
-            rect6.isHidden = false
-        } else if healUpNumber == 4 && resistUpNumber == 1 {
-            rect6.isHidden = false
-        } else if resistUpNumber == 4 && healUpNumber == 1 {
-            rect6.isHidden = false
-        } else {
+        default:
             rect6.isHidden = true
+            bombBox.isHidden = true
+            bombBoxOn = false
             phaseOutOn = false
             bombFire = false
+            teleportOn = false
+            invulnerableOn = false
+            zapperOn = false
         }
-
-
-    }
-    
-    @objc func runPowerUpCombinations() {
-        powerUpCombinations()
     }
 
     @objc func updateArrayImage() {
@@ -494,20 +497,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         cameraNode.position.y = frame.size.height/2
         addChild(cameraNode)
         
-        let boundaryRect = CGRect(x: 0, y: 0, width: frame.size.width, height: frame.size.height)
-        rectBoundary = SKShapeNode(rect: boundaryRect)
-        rectBoundary.physicsBody = SKPhysicsBody(edgeLoopFrom: boundaryRect)
-        rectBoundary.strokeColor = .yellow
-        rectBoundary.lineWidth = 10
-        rectBoundary.physicsBody?.categoryBitMask = boundaryCategory
-        rectBoundary.physicsBody?.contactTestBitMask = bikerCategory
-        rectBoundary.physicsBody?.collisionBitMask = bikerCategory
-        rectBoundary.physicsBody?.isDynamic = false
-        rectBoundary.physicsBody?.friction = 1
-        rectBoundary.physicsBody?.affectedByGravity = false
-        rectBoundary.physicsBody?.restitution = 0
-        //addChild(rectBoundary)
-        
         addChild(biker)
         bikerBuild()
         
@@ -519,7 +508,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bombBox.physicsBody = SKPhysicsBody(texture: bombBox.texture!, size: bombBox.size)
         bombBox.position = CGPoint(x: frame.size.width/2, y: frame.size.height*(5.5/10))
         bombBox.physicsBody?.categoryBitMask = bombCategory
-        bombBox.physicsBody?.contactTestBitMask = carCategory
+        bombBox.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
         bombBox.physicsBody?.collisionBitMask = 0
         bombBox.isHidden = true
         addChild(bombBox)
@@ -574,14 +563,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(healthBar)
         addChild(healthLabel)
         
-
-        gameTimer2 = Timer.scheduledTimer(timeInterval: 1200, target: self, selector: #selector(addPuddle), userInfo: nil, repeats: true)
+        gameTimer2 = Timer.scheduledTimer(timeInterval: 120, target: self, selector: #selector(addPuddle), userInfo: nil, repeats: true)
         gameTimer3 = Timer.scheduledTimer(timeInterval: 10, target: self, selector: #selector(callObstacleArray), userInfo: nil, repeats: true)
-        gameTimer4 = Timer.scheduledTimer(timeInterval: 700, target: self, selector: #selector(addPowerUps), userInfo: nil, repeats: true)
-        gameTimer7 = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(runPowerUpCombinations), userInfo: nil, repeats: true)
+        gameTimer4 = Timer.scheduledTimer(timeInterval: 70, target: self, selector: #selector(addPowerUps), userInfo: nil, repeats: true)
+        gameTimer7 = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(powerUpCombinations), userInfo: nil, repeats: true)
         gameTimer8 = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(updateArrayImage), userInfo: nil, repeats: true)
         threeSecondTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(threeSecondPress), userInfo: nil, repeats: true)
-        
+        fiveSecondTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(fiveSecondPress), userInfo: nil, repeats: true)
 }
     
     @objc func threeSecondPress() {
@@ -589,7 +577,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if threeSecondRunTime >= 3{
         threeSecondOn = true
         }
-        print(threeSecondRunTime)
+    }
+    
+    @objc func fiveSecondPress() {
+        fiveSecondRunTime += 1
+        if fiveSecondRunTime >= 5{
+            fiveSecondOn = true
+        }
     }
     
     @objc func addPuddle() {
@@ -645,17 +639,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         ob4Node.physicsBody = SKPhysicsBody(circleOfRadius: 100)
         ob5Node.physicsBody = SKPhysicsBody(circleOfRadius: 100)
         
-        ob1Node.physicsBody?.categoryBitMask = obNodeCategory
-        ob2Node.physicsBody?.categoryBitMask = obNodeCategory
-        ob3Node.physicsBody?.categoryBitMask = obNodeCategory
-        ob4Node.physicsBody?.categoryBitMask = obNodeCategory
-        ob5Node.physicsBody?.categoryBitMask = obNodeCategory
+        ob1Node.physicsBody?.categoryBitMask = smallDamageCategory
+        ob2Node.physicsBody?.categoryBitMask = smallDamageCategory
+        ob3Node.physicsBody?.categoryBitMask = smallDamageCategory
+        ob4Node.physicsBody?.categoryBitMask = smallDamageCategory
+        ob5Node.physicsBody?.categoryBitMask = smallDamageCategory
         
-        ob1Node.physicsBody?.collisionBitMask = 0
-        ob2Node.physicsBody?.collisionBitMask = 0
-        ob3Node.physicsBody?.collisionBitMask = 0
-        ob4Node.physicsBody?.collisionBitMask = 0
-        ob5Node.physicsBody?.collisionBitMask = 0
+        ob1Node.physicsBody?.collisionBitMask = roarCatreogry
+        ob2Node.physicsBody?.collisionBitMask = roarCatreogry
+        ob3Node.physicsBody?.collisionBitMask = roarCatreogry
+        ob4Node.physicsBody?.collisionBitMask = roarCatreogry
+        ob5Node.physicsBody?.collisionBitMask = roarCatreogry
         
         ob1Node.physicsBody?.contactTestBitMask = bikerCategory
         ob2Node.physicsBody?.contactTestBitMask = bikerCategory
@@ -779,7 +773,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         obOval1Real.zPosition = -1
         //physicsbody broken get texture
         obOval1Real.physicsBody = SKPhysicsBody()
-        obOval1Real.physicsBody?.categoryBitMask = obOvalCategory
+        obOval1Real.physicsBody?.categoryBitMask = smallDamageCategory
         obOval1Real.physicsBody?.collisionBitMask = 0
         obOval1Real.physicsBody?.contactTestBitMask = bikerCategory
         
@@ -792,7 +786,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         obOval2Real.fillColor = .white
         obOval2Real.zPosition = -1
         obOval2Real.physicsBody = SKPhysicsBody()
-        obOval2Real.physicsBody?.categoryBitMask = obOvalCategory
+        obOval2Real.physicsBody?.categoryBitMask = smallDamageCategory
         obOval2Real.physicsBody?.collisionBitMask = 0
         obOval2Real.physicsBody?.contactTestBitMask = bikerCategory
         
@@ -805,7 +799,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         obOval3Real.fillColor = .white
         obOval3Real.zPosition = -1
         obOval3Real.physicsBody = SKPhysicsBody()
-        obOval3Real.physicsBody?.categoryBitMask = obOvalCategory
+        obOval3Real.physicsBody?.categoryBitMask = smallDamageCategory
         obOval3Real.physicsBody?.collisionBitMask = 0
         obOval3Real.physicsBody?.contactTestBitMask = bikerCategory
         
@@ -893,16 +887,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         obRock2.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 300, height: 300))
         obRock3.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 300, height: 300))
         
-        obRock1.physicsBody?.categoryBitMask = obRockCategory
-        obRock1.physicsBody?.collisionBitMask = 0
+        obRock1.physicsBody?.categoryBitMask = mediumDamageCategory
+        obRock1.physicsBody?.collisionBitMask = roarCatreogry
         obRock1.physicsBody?.contactTestBitMask = bikerCategory
         
-        obRock2.physicsBody?.categoryBitMask = obRockCategory
-        obRock2.physicsBody?.collisionBitMask = 0
+        obRock2.physicsBody?.categoryBitMask = mediumDamageCategory
+        obRock2.physicsBody?.collisionBitMask = roarCatreogry
         obRock2.physicsBody?.contactTestBitMask = bikerCategory
         
-        obRock3.physicsBody?.categoryBitMask = obRockCategory
-        obRock3.physicsBody?.collisionBitMask = 0
+        obRock3.physicsBody?.categoryBitMask = mediumDamageCategory
+        obRock3.physicsBody?.collisionBitMask = roarCatreogry
         obRock3.physicsBody?.contactTestBitMask = bikerCategory
         
         obRock1.position = CGPoint(x: (CGFloat(biker.position.x) + spawnXArray[randomSpawnX]), y: (CGFloat(biker.position.y)) + CGFloat(randomY))
@@ -1153,7 +1147,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         obLanded1.fillColor = .red
         obLanded1.position = obShadow1.position
         obLanded1.physicsBody = SKPhysicsBody(circleOfRadius: 150)
-        obLanded1.physicsBody?.categoryBitMask = obLandedCategory
+        obLanded1.physicsBody?.categoryBitMask = largeDamageCategory
         obLanded1.physicsBody?.collisionBitMask = 0
         obLanded1.physicsBody?.contactTestBitMask = bikerCategory
         
@@ -1161,21 +1155,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         obLanded2.fillColor = .red
         obLanded2.position = obShadow2.position
         obLanded2.physicsBody = SKPhysicsBody(circleOfRadius: 150)
-        obLanded2.physicsBody?.categoryBitMask = obLandedCategory
+        obLanded2.physicsBody?.categoryBitMask = largeDamageCategory
         obLanded2.physicsBody?.collisionBitMask = 0
         obLanded2.physicsBody?.contactTestBitMask = bikerCategory
         
         obLanded3.fillColor = .red
         obLanded3.position = obShadow3.position
         obLanded3.physicsBody = SKPhysicsBody(circleOfRadius: 150)
-        obLanded3.physicsBody?.categoryBitMask = obLandedCategory
+        obLanded3.physicsBody?.categoryBitMask = largeDamageCategory
         obLanded3.physicsBody?.collisionBitMask = 0
         obLanded3.physicsBody?.contactTestBitMask = bikerCategory
         
         obLanded4.fillColor = .red
         obLanded4.position = obShadow4.position
         obLanded4.physicsBody = SKPhysicsBody(circleOfRadius: 150)
-        obLanded4.physicsBody?.categoryBitMask = obLandedCategory
+        obLanded4.physicsBody?.categoryBitMask = largeDamageCategory
         obLanded4.physicsBody?.collisionBitMask = 0
         obLanded4.physicsBody?.contactTestBitMask = bikerCategory
         
@@ -1315,7 +1309,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bullet1.position = obShip1.position
         bullet1.fillColor = .white
         bullet1.physicsBody = SKPhysicsBody(circleOfRadius: 25)
-        bullet1.physicsBody?.collisionBitMask = 0
         addChild(bullet1)
         let bulletX:Float = Float(bullet1.position.x - biker.position.x)
         let bulletY:Float = Float(bullet1.position.y - biker.position.y)
@@ -1331,7 +1324,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bullet2.position = obShip2.position
         bullet2.fillColor = .white
         bullet2.physicsBody = SKPhysicsBody(circleOfRadius: 25)
-        bullet2.physicsBody?.collisionBitMask = 0
         addChild(bullet2)
         let bulletX2:Float = Float(bullet2.position.x - biker.position.x)
         let bulletY2:Float = Float(bullet2.position.y - biker.position.y)
@@ -1347,7 +1339,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bullet3.position = obShip3.position
         bullet3.fillColor = .white
         bullet3.physicsBody = SKPhysicsBody(circleOfRadius: 25)
-        bullet3.physicsBody?.collisionBitMask = 0
         addChild(bullet3)
         let bulletX3:Float = Float(bullet3.position.x - biker.position.x)
         let bulletY3:Float = Float(bullet3.position.y - biker.position.y)
@@ -1363,7 +1354,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bullet4.position = obShip4.position
         bullet4.fillColor = .white
         bullet4.physicsBody = SKPhysicsBody(circleOfRadius: 25)
-        bullet4.physicsBody?.collisionBitMask = 0
         addChild(bullet4)
         let bulletX4:Float = Float(bullet4.position.x - biker.position.x)
         let bulletY4:Float = Float(bullet4.position.y - biker.position.y)
@@ -1376,47 +1366,94 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             bullet4.removeFromParent()
         }
         
-        bullet1.physicsBody?.categoryBitMask = obBulletCategory
-        bullet1.physicsBody?.collisionBitMask = 0
+        self.run(SKAction.wait(forDuration:9)){
+            bullet1.removeFromParent()
+            bullet2.removeFromParent()
+            bullet3.removeFromParent()
+            bullet4.removeFromParent()
+        }
+        
+        bullet1.physicsBody?.categoryBitMask = smallDamageCategory
+        bullet1.physicsBody?.collisionBitMask = roarCatreogry
         bullet1.physicsBody?.contactTestBitMask = bikerCategory
         
-        bullet2.physicsBody?.categoryBitMask = obBulletCategory
-        bullet2.physicsBody?.collisionBitMask = 0
+        bullet2.physicsBody?.categoryBitMask = smallDamageCategory
+        bullet2.physicsBody?.collisionBitMask = roarCatreogry
         bullet2.physicsBody?.contactTestBitMask = bikerCategory
         
-        bullet3.physicsBody?.categoryBitMask = obBulletCategory
-        bullet3.physicsBody?.collisionBitMask = 0
+        bullet3.physicsBody?.categoryBitMask = smallDamageCategory
+        bullet3.physicsBody?.collisionBitMask = roarCatreogry
         bullet3.physicsBody?.contactTestBitMask = bikerCategory
         
-        bullet4.physicsBody?.categoryBitMask = obBulletCategory
-        bullet4.physicsBody?.collisionBitMask = 0
+        bullet4.physicsBody?.categoryBitMask = smallDamageCategory
+        bullet4.physicsBody?.collisionBitMask = roarCatreogry
         bullet4.physicsBody?.contactTestBitMask = bikerCategory
         
     }
     
-    func shieldBuild() {
-        print("shield")
+    func makeShield() {
+        
         shield.strokeColor = .blue
         shield.lineWidth = 2
         shield.glowWidth = 2
         shield.zPosition = 6
-        shield.position = (CGPoint(x: biker.position.x, y: biker.position.y))
+        shield.position = biker.position
         shield.physicsBody = SKPhysicsBody(circleOfRadius: 200)
         shield.physicsBody?.isDynamic = true
         shield.physicsBody?.categoryBitMask = shieldCategory
-        shield.physicsBody?.contactTestBitMask = carCategory
+        shield.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
         shield.physicsBody?.collisionBitMask = 0
-    
-        self.addChild(shield)
+        
+        if fiveSecondOn == true && shieldOn == false{
+        shieldOn = true
+        addChild(shield)
+        }
+        
     }
     
-    func makeShield() {
+    func makeZapper() {
         
-        self.run(SKAction.wait(forDuration:5)){
-            let on = SKAction.run({self.shieldBuild()})
-            self.run(on)
-            self.shieldOn = true
+        zapper.strokeColor = .blue
+        zapper.lineWidth = 2
+        
+        zapper.zPosition = 6
+        zapper.position = biker.position
+        zapper.physicsBody = SKPhysicsBody(circleOfRadius: 400)
+        zapper.physicsBody?.isDynamic = true
+        zapper.physicsBody?.categoryBitMask = zapperCategory
+        zapper.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
+        zapper.physicsBody?.collisionBitMask = 0
+        
+        if fiveSecondOn == true && zapperOn == false{
+            zapperOn = true
+            addChild(zapper)
+            
         }
+        
+        return
+        
+    }
+    
+    func makeRoar() {
+        //grow and contact
+        roar.zPosition = 6
+        roar.position = biker.position
+        roar.size = CGSize(width: 500, height: 500)
+        roar.physicsBody = SKPhysicsBody(texture: roar.texture!, size: roar.texture!.size())
+        roar.physicsBody?.isDynamic = false
+        roar.physicsBody?.categoryBitMask = roarCatreogry
+        roar.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
+        roar.physicsBody?.collisionBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
+        
+        addChild(roar)
+        
+        let growRoar = SKAction.resize(byWidth: 600, height: 600, duration: 0.5)
+        roar.run(growRoar)	
+        
+        self.run(SKAction.wait(forDuration:0.5)){
+            self.roar.removeFromParent()
+        }
+        
     }
     
     func fireBomb() {
@@ -1444,34 +1481,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.biker.physicsBody?.categoryBitMask = self.bikerCategory
             self.biker.alpha = 1.0
         }
-        print("phase out fire")
     }
     
     func bikerContact() {
         
-        if bObNode == true {
+        if contactSmall == true {
             currentHealth -= (10 - (resistUpNumber*bikerResistance))
-            bObNode = false
+            contactSmall = false
         }
         
-        if bObOval == true {
+        if contactMedium == true{
             currentHealth -= (10 - (resistUpNumber*bikerResistance))
-            bObNode = false
+            contactMedium = false
         }
         
-        if bObRock == true{
-            currentHealth -= (10 - (resistUpNumber*bikerResistance))
-            bObRock = false
-        }
-        
-        if bObBullet == true{
-            currentHealth -= (10 - (resistUpNumber*bikerResistance))
-            bObBullet = false
-        }
-        
-        if bObLanded == true{
+        if contactLarge == true{
             currentHealth -= (50 - (resistUpNumber*bikerResistance))
-            bObLanded = false
+            contactLarge = false
         }
         
         
@@ -1511,6 +1537,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 bHeal = false
             }
         }
+        
+    }
+    
+    func invulnerable() {
+        
+        let invulnerable = SKAction.run {self.biker.physicsBody?.collisionBitMask = 1; self.biker.physicsBody?.categoryBitMask = 0}
+        
+        self.run(invulnerable)
+        
+        self.run(SKAction.wait(forDuration: 2)) {
+            
+            self.biker.physicsBody?.collisionBitMask = 0
+            self.biker.physicsBody?.categoryBitMask = self.bikerCategory
+            
+        }
+        
+    }
+    
+    func abilityPositions() {
+        
+        shield.position = biker.position
+        zapper.position = biker.position
+        roar.position = biker.position
         
     }
     
@@ -1561,6 +1610,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func bombBoxPositions() {
 
+        bombBox.position.y = biker.position.y + frame.size.height/4
+        
         if moveRight == true {
             movementValue += 5
             bombBox.position.x = (cameraNode.position.x + CGFloat(movementValue))
@@ -1614,38 +1665,44 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             contact.bodyB.node?.removeFromParent()
             bHeal = true
             
-        case shieldCategory | carCategory:
+        case shieldCategory | smallDamageCategory:
             
             contact.bodyA.node?.removeFromParent()
             contact.bodyB.node?.removeFromParent()
             
+            fiveSecondRunTime = 0
             shieldOn = false
             
-        case bikerCategory | obNodeCategory:
+        case zapperCategory | smallDamageCategory:
+            
+            contact.bodyA.node?.removeFromParent()
+            contact.bodyB.node?.removeFromParent()
+            
+            fiveSecondRunTime = 0
+            zapperOn = false
+            
+        case bikerCategory | smallDamageCategory:
             
             contact.bodyB.node?.removeFromParent()
-            bObNode = true
+            contactSmall = true
             
-        case bikerCategory | obOvalCategory:
-            
-            bObOval = true
-            
-        case bikerCategory | obRockCategory:
+        case bikerCategory | mediumDamageCategory:
             
             contact.bodyB.node?.removeFromParent()
-            bObRock = true
+            contactMedium = true
             
-        case bikerCategory | obBulletCategory:
-            
-            contact.bodyB.node?.removeFromParent()
-            bObBullet = true
-            
-        case bikerCategory | obLandedCategory:
+        case bikerCategory | largeDamageCategory:
             
             contact.bodyB.node?.removeFromParent()
-            bObLanded = true
+            contactLarge = true
             
-        case bombCategory | carCategory:
+        case zapperCategory | smallDamageCategory:
+            
+            contact.bodyA.node?.removeFromParent()
+            contact.bodyB.node?.removeFromParent()
+            
+            fiveSecondRunTime = 0
+            shieldOn = false
             
             if bombFire == true {
                 let delay = SKAction.wait(forDuration: 1)
@@ -1653,6 +1710,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 let sequence = SKAction.sequence([delay, remove])
 
                 self.run(sequence)
+                bombFire = false
             }
             
         default:
@@ -1665,12 +1723,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         biker.position = CGPoint(x: frame.size.width/2, y: frame.size.height/2)
         biker.zPosition = 10
+        biker.size = CGSize(width: 300, height: 300)
         biker.physicsBody = SKPhysicsBody(texture: biker.texture!, size: biker.texture!.size())
         biker.physicsBody?.affectedByGravity = false
         biker.physicsBody?.isDynamic = true
         biker.name = "BIKER"
         biker.physicsBody?.categoryBitMask = bikerCategory
-        biker.physicsBody?.contactTestBitMask = carCategory | boundaryCategory
+        biker.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
         biker.physicsBody?.collisionBitMask = 0
         biker.physicsBody?.usesPreciseCollisionDetection = true
 
@@ -1690,14 +1749,35 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let speedX = Double((Float(300 + (speedUpBiker*speedUpNumber))*(bikerX))/sqrt(pow((bikerX), 2) + pow((bikerY), 2)))
             let speedY = Double((Float(300 + (speedUpBiker*speedUpNumber))*(bikerY))/sqrt(pow((bikerX), 2) + pow((bikerY), 2)))
             
+            touchLocationX = location.x
+            touchLocationY = location.y
+            
             biker.physicsBody?.velocity = CGVector(dx: speedX, dy: speedY)
+            
+            let doubleTap = UITapGestureRecognizer(target: self, action: #selector(doubleTapDetected))
+            doubleTap.numberOfTapsRequired = 2
+            
+            if teleportOn == true{
+            view?.addGestureRecognizer(doubleTap)
+            }
+            
+            touchDetected = true
+            if touchDetected == false{
+                biker.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
+            }
             
             if button.contains(location){
                 
+                if fiveSecondOn == true && roarOn == true{
+                    fiveSecondRunTime = 0
+                    makeRoar()
+                }
                 
-                if bombBoxOn == true {
+                if bombBoxOn == true && fiveSecondOn == true {
                 bombFire = true
                 fireBomb()
+                fiveSecondRunTime = 0
+                fiveSecondOn = false
                 bombBoxOn = false
                 }
                 if threeSecondOn == true{
@@ -1707,8 +1787,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                             threeSecondOn = false
                     
                 }
-                print("button press")
             }
+                if fiveSecondOn == true{
+                    if invulnerableOn == true{
+                        invulnerable()
+                        fiveSecondRunTime = 0
+                        fiveSecondOn = false
+                        
+                    }
+                }
         }
         }
     }
@@ -1722,12 +1809,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let speedX = Double((Float(300 + (speedUpBiker*speedUpNumber))*(bikerX))/sqrt(pow((bikerX), 2) + pow((bikerY), 2)))
             let speedY = Double((Float(300 + (speedUpBiker*speedUpNumber))*(bikerY))/sqrt(pow((bikerX), 2) + pow((bikerY), 2)))
             
+            touchDetected = true
+            if touchDetected == false{
+                biker.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
+            }
+            
             biker.physicsBody?.velocity = CGVector(dx: speedX, dy: speedY)
             
         }
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        touchDetected = false
+        biker.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
+    }
+    
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        touchDetected = false
         biker.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
     }
 
@@ -1736,13 +1834,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         healthLabel.position.y = cameraNode.position.y + (frame.size.height * 0.962 - frame.size.height/2)
         healthBar.position.x = cameraNode.position.x + frame.size.width/4
         healthBar.position.y = cameraNode.position.y + (frame.size.height * 0.97 - frame.size.height/2)
-        shield.position = biker.position
         button.position.x = cameraNode.position.x
         button.position.y = cameraNode.position.y - frame.size.height*(24/50)
         starfieldNode.position.x = cameraNode.position.x
         starfieldNode2.position.x = cameraNode.position.x
         cameraPositions()
         emitterPositions()
+        abilityPositions()
         rectanglePositions()
         bombBoxPositions()
         healthAnimation()
