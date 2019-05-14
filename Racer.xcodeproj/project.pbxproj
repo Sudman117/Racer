@@ -23,6 +23,7 @@
 		E90B9BB12127A2DD0005F813 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E90B9BAF2127A2DD0005F813 /* LaunchScreen.storyboard */; };
 		E90B9BBC2127A2DD0005F813 /* RacerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90B9BBB2127A2DD0005F813 /* RacerTests.swift */; };
 		E90B9BC72127A2DD0005F813 /* RacerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90B9BC62127A2DD0005F813 /* RacerUITests.swift */; };
+		E933CD24228112EF002E3CBA /* vortex.sks in Resources */ = {isa = PBXBuildFile; fileRef = E933CD23228112EF002E3CBA /* vortex.sks */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +66,7 @@
 		E90B9BC22127A2DD0005F813 /* RacerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RacerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E90B9BC62127A2DD0005F813 /* RacerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RacerUITests.swift; sourceTree = "<group>"; };
 		E90B9BC82127A2DD0005F813 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E933CD23228112EF002E3CBA /* vortex.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = vortex.sks; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,6 +103,7 @@
 				8394039421FA85210046E188 /* Resist Right.sks */,
 				8394038921FA3B250046E188 /* Heal.sks */,
 				8394039821FA854B0046E188 /* Heal Right.sks */,
+				E933CD23228112EF002E3CBA /* vortex.sks */,
 			);
 			path = Emitters;
 			sourceTree = "<group>";
@@ -268,6 +271,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E90B9BAC2127A2DA0005F813 /* Main.storyboard in Resources */,
+				E933CD24228112EF002E3CBA /* vortex.sks in Resources */,
 				8394039221FA84F20046E188 /* Speed Right.sks in Resources */,
 				E90B9BA32127A2DA0005F813 /* GameScene.sks in Resources */,
 				E90B9BAE2127A2DD0005F813 /* Assets.xcassets in Resources */,

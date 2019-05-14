@@ -69,6 +69,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var phaseOutOn:Bool = false
     var invulnerableOn:Bool = false
     var roarOn:Bool = true
+    var vortexActive:Bool = false
     
     var bPuddle:Bool = false
     var bHeal:Bool = false
@@ -88,6 +89,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var healthLabel = SKLabelNode()
     var cameraNode = SKCameraNode()
     var rectBoundary = SKShapeNode()
+    
     let speedParticlesRight = SKEmitterNode(fileNamed: "Speed Right.sks")
     let speedParticles = SKEmitterNode(fileNamed: "Speed.sks")
     let resistParticlesRight = SKEmitterNode(fileNamed: "Resist Right.sks")
@@ -96,7 +98,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let healParticles = SKEmitterNode(fileNamed: "Heal.sks")
     let starfieldNode = SKSpriteNode(imageNamed: "starfield")
     let starfieldNode2 = SKSpriteNode(imageNamed: "starfield")
-    var bombBox = SKSpriteNode(imageNamed: "reticule")
+    let bombBox = SKSpriteNode(imageNamed: "reticule")
+    let vortexEmitter = SKEmitterNode(fileNamed: "vortex")
+    
     
     var rect1 = SKSpriteNode()
     var rect2 = SKSpriteNode()
@@ -385,14 +389,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func createVortex() {
+        vortexActive = true
+        
         vortex.isEnabled = true
         vortex.strength = 200
         vortex.categoryBitMask = vortexCategory
         player.physicsBody?.fieldBitMask = 0
         player.addChild(vortex)
+        player.addChild(vortexEmitter!)
         
         Timer.scheduledTimer(withTimeInterval: 30, repeats: false, block: { (Timer) in
             self.vortex.isEnabled = false
+            self.vortexActive = false
         })
     }
 
