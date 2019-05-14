@@ -15,7 +15,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let player = SKSpriteNode(imageNamed: "ship")
     let shield = SKShapeNode(circleOfRadius: 200)
     let zapper = SKShapeNode(circleOfRadius: 400)
-    let roar = SKSpriteNode(imageNamed: "reticule")
     let button = SKShapeNode(rectOf: CGSize(width: 1080, height: 110))
     let vortex = SKFieldNode.radialGravityField()
     
@@ -30,6 +29,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let obShip2 = SKShapeNode(rectOf: CGSize(width: 250, height: 250))
     let obShip3 = SKShapeNode(rectOf: CGSize(width: 250, height: 250))
     let obShip4 = SKShapeNode(rectOf: CGSize(width: 250, height: 250))
+    
+    let obHitBoxa = SKSpriteNode(texture: SKTexture(imageNamed: "ob hitbox"))
+    let obHitBoxb = SKSpriteNode(texture: SKTexture(imageNamed: "ob hitbox"))
+    let obHitBoxc = SKSpriteNode(texture: SKTexture(imageNamed: "ob hitbox"))
     
     //implement
     var difficulty2:Bool = false
@@ -68,9 +71,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var teleportOn:Bool = false
     var phaseOutOn:Bool = false
     var invulnerableOn:Bool = false
-    var roarOn:Bool = true
     var vortexActive:Bool = false
-    
+    var roarOn:Bool = false
+    var speedBoostOn:Bool = false
+    var missileCall:Bool = false
+    var sendShips:Bool = true
+    var shipsAlive:CGFloat = 0
+
     var bPuddle:Bool = false
     var bHeal:Bool = false
     var bResist:Bool = false
@@ -78,6 +85,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var contactSmall:Bool = false
     var contactMedium:Bool = false
     var contactLarge:Bool = false
+    var contactOval:Bool = false
+    var smallShipContact:Bool = false
     
     var touchDetected:Bool = false
     var moveRight:Bool = true
@@ -96,11 +105,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let resistParticles = SKEmitterNode(fileNamed: "Resist.sks")
     let healParticlesRight = SKEmitterNode(fileNamed: "Heal Right.sks")
     let healParticles = SKEmitterNode(fileNamed: "Heal.sks")
+    let roarParticles = SKEmitterNode(fileNamed: "RoarEmitter.sks")
     let starfieldNode = SKSpriteNode(imageNamed: "starfield")
     let starfieldNode2 = SKSpriteNode(imageNamed: "starfield")
     let bombBox = SKSpriteNode(imageNamed: "reticule")
     let vortexEmitter = SKEmitterNode(fileNamed: "vortex")
-    
     
     var rect1 = SKSpriteNode()
     var rect2 = SKSpriteNode()
@@ -129,13 +138,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let smallDamageCategory:UInt32 = 1 << 9
     let mediumDamageCategory:UInt32 = 1 << 10
     let largeDamageCategory:UInt32 = 1 << 11
-    let roarCatreogry:UInt32 = 1 << 12
-    let vortexCategory:UInt32 = 1 << 13
+    let roarVortexCategory:UInt32 = 1 << 12
+    let missileCallCategory: UInt32 = 1 << 13
+    let smallShipCategory:UInt32 = 1 << 14
+    let obOvalCategory:UInt32 = 1 << 15
+    let vortexCategory:UInt32 = 1 << 16
     
     var activeArray = [String]()
     
     func readyArray() {
-        
+    
         speedUpNumber = activeArray.filter{ $0 == "Speed"}.count
         resistUpNumber = activeArray.filter{ $0 == "Resist"}.count
         healUpNumber = activeArray.filter{ $0 == "Heal"}.count
@@ -239,45 +251,41 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func healEmitter() {
-        let delay1 = SKAction.wait(forDuration: 1.5)
-        let remove1 = SKAction.removeFromParent()
-        let sequence1 = SKAction.sequence([delay1,remove1])
-        addChild(healParticles!)
-        healParticles?.run(sequence1)
         
-        let delay2 = SKAction.wait(forDuration: 1.5)
-        let remove2 = SKAction.removeFromParent()
-        let sequence2 = SKAction.sequence([delay2,remove2])
+        addChild(healParticles!)
         addChild(healParticlesRight!)
-        healParticlesRight?.run(sequence2)
+        self.run(SKAction.wait(forDuration:1.5)){
+            self.healParticles?.removeFromParent()
+            self.healParticlesRight?.removeFromParent()
+        }
     }
     
     func resistEmitter() {
-        let delay1 = SKAction.wait(forDuration: 1.5)
-        let remove1 = SKAction.removeFromParent()
-        let sequence1 = SKAction.sequence([delay1,remove1])
-        addChild(resistParticles!)
-        resistParticles?.run(sequence1)
         
-        let delay2 = SKAction.wait(forDuration: 1.5)
-        let remove2 = SKAction.removeFromParent()
-        let sequence2 = SKAction.sequence([delay2,remove2])
+        addChild(resistParticles!)
         addChild(resistParticlesRight!)
-        resistParticlesRight?.run(sequence2)
+        self.run(SKAction.wait(forDuration:1.5)){
+            self.resistParticles?.removeFromParent()
+            self.resistParticlesRight?.removeFromParent()
+        }
     }
     
     func speedEmitter() {
-        let delay1 = SKAction.wait(forDuration: 1.5)
-        let remove1 = SKAction.removeFromParent()
-        let sequence1 = SKAction.sequence([delay1,remove1])
-        addChild(speedParticles!)
-        speedParticles?.run(sequence1)
         
-        let delay2 = SKAction.wait(forDuration: 1.5)
-        let remove2 = SKAction.removeFromParent()
-        let sequence2 = SKAction.sequence([delay2,remove2])
+        addChild(speedParticles!)
         addChild(speedParticlesRight!)
-        speedParticlesRight?.run(sequence2)
+        self.run(SKAction.wait(forDuration:1.5)){
+            self.speedParticles?.removeFromParent()
+            self.speedParticlesRight?.removeFromParent()
+        }
+    }
+    
+    func roarEmitter() {
+
+        addChild(roarParticles!)
+        self.run(SKAction.wait(forDuration:1)){
+            self.roarParticles?.removeFromParent()
+        }
     }
     
     @objc func addPowerUps() {
@@ -313,6 +321,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             currentHealth += (bikerHealing*healUpNumber)
         }
         
+        makeShips()
+        
         let abilityArray = [speedUpNumber,resistUpNumber,healUpNumber]
         
         switch abilityArray {
@@ -336,13 +346,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             makeZapper()
             rect6.isHidden = false
         case [0,1,4]:
-            //shovel
             rect6.isHidden = false
         case [0,4,1]:
             invulnerableOn = true
             rect6.isHidden = false
         case [1,4,0]:
-            //roar
             roarOn = true
             rect6.isHidden = false
         case [3,2,0]:
@@ -350,16 +358,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             createVortex()
             rect6.isHidden = false
         case [3,0,2]:
+            player.size = CGSize(width: 200, height: 200)
             rect6.isHidden = false
         case [2,3,0]:
+            //ships
+            sendShips = true
+            makeShips()
             rect6.isHidden = false
         case [0,3,2]:
+            speedBoostOn = true
             rect6.isHidden = false
         case [0,2,3]:
             rect6.isHidden = false
         case [2,0,3]:
             rect6.isHidden = false
         case [3,1,1]:
+            missileCall = true
             rect6.isHidden = false
         case [1,1,3]:
             rect6.isHidden = false
@@ -379,12 +393,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         default:
             rect6.isHidden = true
             bombBox.isHidden = true
+            player.size = CGSize(width: 300, height: 300)
             bombBoxOn = false
             phaseOutOn = false
             bombFire = false
             teleportOn = false
             invulnerableOn = false
+            roarOn = false
             zapperOn = false
+            speedBoostOn = false
+            missileCall = false
         }
     }
     
@@ -670,11 +688,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         ob4Node.physicsBody?.categoryBitMask = smallDamageCategory
         ob5Node.physicsBody?.categoryBitMask = smallDamageCategory
         
-        ob1Node.physicsBody?.collisionBitMask = roarCatreogry
-        ob2Node.physicsBody?.collisionBitMask = roarCatreogry
-        ob3Node.physicsBody?.collisionBitMask = roarCatreogry
-        ob4Node.physicsBody?.collisionBitMask = roarCatreogry
-        ob5Node.physicsBody?.collisionBitMask = roarCatreogry
+        ob1Node.physicsBody?.collisionBitMask = shieldCategory
+        ob2Node.physicsBody?.collisionBitMask = shieldCategory
+        ob3Node.physicsBody?.collisionBitMask = shieldCategory
+        ob4Node.physicsBody?.collisionBitMask = shieldCategory
+        ob5Node.physicsBody?.collisionBitMask = shieldCategory
         
         ob1Node.physicsBody?.contactTestBitMask = bikerCategory
         ob2Node.physicsBody?.contactTestBitMask = bikerCategory
@@ -739,10 +757,28 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func obstacle2() {
-
-        let randomRotate:Int = Int.random(in: -70...70)
-        let randomRotate2:Int = Int.random(in: -70...70)
-        let randomRotate3:Int = Int.random(in: -70...70)
+        
+        let oval1a = SKSpriteNode(texture: SKTexture(imageNamed: "fade 1"))
+        let oval2a = SKSpriteNode(texture: SKTexture(imageNamed: "fade 2"))
+        let oval3a = SKSpriteNode(texture: SKTexture(imageNamed: "fade 3"))
+        let flicker1a = SKSpriteNode(texture: SKTexture(imageNamed: "flicker 1"))
+        let flicker2a = SKSpriteNode(texture: SKTexture(imageNamed: "flicker 2"))
+        
+        let oval1b = SKSpriteNode(texture: SKTexture(imageNamed: "fade 1"))
+        let oval2b = SKSpriteNode(texture: SKTexture(imageNamed: "fade 2"))
+        let oval3b = SKSpriteNode(texture: SKTexture(imageNamed: "fade 3"))
+        let flicker1b = SKSpriteNode(texture: SKTexture(imageNamed: "flicker 1"))
+        let flicker2b = SKSpriteNode(texture: SKTexture(imageNamed: "flicker 2"))
+        
+        let oval1c = SKSpriteNode(texture: SKTexture(imageNamed: "fade 1"))
+        let oval2c = SKSpriteNode(texture: SKTexture(imageNamed: "fade 2"))
+        let oval3c = SKSpriteNode(texture: SKTexture(imageNamed: "fade 3"))
+        let flicker1c = SKSpriteNode(texture: SKTexture(imageNamed: "flicker 1"))
+        let flicker2c = SKSpriteNode(texture: SKTexture(imageNamed: "flicker 2"))
+        
+        let randomRotate:Int = Int.random(in: -50...50)
+        let randomRotate2:Int = Int.random(in: -50...50)
+        let randomRotate3:Int = Int.random(in: -50...50)
         
         var randomY:Int = Int.random(in: -(Int(frame.size.height/2))...(Int(frame.size.height/2)))
         var randomX:Int = Int.random(in: -(Int(frame.size.width/2))...(Int(frame.size.width/2)))
@@ -787,97 +823,217 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         } else if (frame.size.width/2 - CGFloat(randomX3)) < frame.size.width/2 && ((frame.size.width/2)-abs(CGFloat(randomX3)) < (frame.size.height/2 - abs(CGFloat(randomY3)))) {
             randomX3 = Int(frame.size.width/2)
         }
+        //add hitbox physics bodies
+        oval1a.position = CGPoint(x: Int(biker.position.x) + randomX, y: Int(biker.position.y) + randomY)
+        oval1a.zPosition = -6
+        oval1a.alpha = 0
+        oval2a.position = oval1a.position
+        oval2a.zPosition = -5
+        oval2a.alpha = 0
+        oval3a.position = oval1a.position
+        oval3a.zPosition = -4
+        oval3a.alpha = 0
+        obHitBoxa.position = oval1a.position
+        obHitBoxa.zPosition = -7
+        obHitBoxa.alpha = 0
+        obHitBoxa.physicsBody = SKPhysicsBody(texture: obHitBoxa.texture!, size: obHitBoxa.texture!.size())
+        obHitBoxa.physicsBody?.categoryBitMask = obOvalCategory
+        obHitBoxa.physicsBody?.collisionBitMask = 0
+        obHitBoxa.physicsBody?.contactTestBitMask = bikerCategory
+        flicker1a.position = oval1a.position
+        flicker1a.zPosition = -3
+        flicker1a.alpha = 1
+        flicker2a.position = oval1a.position
+        flicker2a.zPosition = -2
+        flicker2a.alpha = 1
         
-        obOval1Fade.position = CGPoint(x: Int(player.position.x) + randomX, y: Int(player.position.y) + randomY)
-        obOval1Fade.zPosition = -2
-        obOval1Fade.alpha = 0
-        obOval1Fade.fillColor = .red
+        oval1b.position = CGPoint(x: Int(biker.position.x) + randomX2, y: Int(biker.position.y) + randomY2)
+        oval1b.zPosition = -6
+        oval1b.alpha = 0
+        oval2b.position = oval1b.position
+        oval2b.zPosition = -5
+        oval2b.alpha = 0
+        oval3b.position = oval1b.position
+        oval3b.zPosition = -4
+        oval3b.alpha = 0
+        obHitBoxb.position = oval1b.position
+        obHitBoxb.zPosition = -7
+        obHitBoxb.alpha = 0
+        obHitBoxb.physicsBody = SKPhysicsBody(texture: obHitBoxb.texture!, size: obHitBoxb.texture!.size())
+        obHitBoxb.physicsBody?.categoryBitMask = obOvalCategory
+        obHitBoxb.physicsBody?.collisionBitMask = 0
+        obHitBoxb.physicsBody?.contactTestBitMask = bikerCategory
+        flicker1b.position = oval1b.position
+        flicker1b.zPosition = -3
+        flicker1b.alpha = 1
+        flicker2b.position = oval1b.position
+        flicker2b.zPosition = -2
+        flicker2b.alpha = 1
         
-        obOval1Real.position = CGPoint(x: Int(player.position.x) + randomX, y: Int(player.position.y) + randomY)
-        obOval1Real.fillColor = .white
-        obOval1Real.zPosition = -1
-        //physicsbody broken get texture
-        obOval1Real.physicsBody = SKPhysicsBody()
-        obOval1Real.physicsBody?.categoryBitMask = smallDamageCategory
-        obOval1Real.physicsBody?.collisionBitMask = 0
-        obOval1Real.physicsBody?.contactTestBitMask = bikerCategory
-        
-        obOval2Fade.position = CGPoint(x: Int(player.position.x) + randomX2, y: Int(player.position.y) + randomY2)
-        obOval2Fade.zPosition = -2
-        obOval2Fade.alpha = 0
-        obOval2Fade.fillColor = .red
-        
-        obOval2Real.position = CGPoint(x: Int(player.position.x) + randomX2, y: Int(player.position.y) + randomY2)
-        obOval2Real.fillColor = .white
-        obOval2Real.zPosition = -1
-        obOval2Real.physicsBody = SKPhysicsBody()
-        obOval2Real.physicsBody?.categoryBitMask = smallDamageCategory
-        obOval2Real.physicsBody?.collisionBitMask = 0
-        obOval2Real.physicsBody?.contactTestBitMask = bikerCategory
-        
-        obOval3Fade.position = CGPoint(x: Int(player.position.x) + randomX3, y: Int(player.position.y) + randomY3)
-        obOval3Fade.zPosition = -2
-        obOval3Fade.alpha = 0
-        obOval3Fade.fillColor = .red
-        
-        obOval3Real.position = CGPoint(x: Int(player.position.x) + randomX3, y: Int(player.position.y) + randomY3)
-        obOval3Real.fillColor = .white
-        obOval3Real.zPosition = -1
-        obOval3Real.physicsBody = SKPhysicsBody()
-        obOval3Real.physicsBody?.categoryBitMask = smallDamageCategory
-        obOval3Real.physicsBody?.collisionBitMask = 0
-        obOval3Real.physicsBody?.contactTestBitMask = bikerCategory
+        oval1c.position = CGPoint(x: Int(biker.position.x) + randomX3, y: Int(biker.position.y) + randomY3)
+        oval1c.zPosition = -6
+        oval1c.alpha = 0
+        oval2c.position = oval1c.position
+        oval2c.zPosition = -5
+        oval2c.alpha = 0
+        oval3c.position = oval1c.position
+        oval3c.zPosition = -4
+        oval3c.alpha = 0
+        obHitBoxc.position = oval1c.position
+        obHitBoxc.zPosition = -7
+        obHitBoxc.alpha = 0
+        obHitBoxc.physicsBody = SKPhysicsBody(texture: obHitBoxc.texture!, size: obHitBoxc.texture!.size())
+        obHitBoxc.physicsBody?.categoryBitMask = obOvalCategory
+        obHitBoxc.physicsBody?.collisionBitMask = 0
+        obHitBoxc.physicsBody?.contactTestBitMask = bikerCategory
+        flicker1c.position = oval1c.position
+        flicker1c.zPosition = -3
+        flicker1c.alpha = 1
+        flicker2c.position = oval1c.position
+        flicker2c.zPosition = -2
+        flicker2c.alpha = 1
         
         let rotate = SKAction.rotate(byAngle: CGFloat(randomRotate), duration: 0)
         let rotate2 = SKAction.rotate(byAngle: CGFloat(randomRotate2), duration: 0)
         let rotate3 = SKAction.rotate(byAngle: CGFloat(randomRotate3), duration: 0)
-        let fadeIn = SKAction.fadeIn(withDuration: 2)
+        let fadeIn = SKAction.fadeIn(withDuration: 0.66)
         let spawnDelay = SKAction.wait(forDuration: 2)
+        let wait1 = SKAction.wait(forDuration: 0.66)
+        let wait2 = SKAction.wait(forDuration: 1.32)
         let remove = SKAction.removeFromParent()
         let sequence = SKAction.sequence([rotate,fadeIn,spawnDelay,remove])
         let sequence2 = SKAction.sequence([rotate2,fadeIn,spawnDelay,remove])
         let sequence3 = SKAction.sequence([rotate3,fadeIn,spawnDelay,remove])
         
-        self.run(SKAction.wait(forDuration: 2)) {
-            self.addChild(self.obOval1Real)
+        addChild(oval1a)
+        addChild(oval1b)
+        addChild(oval1c)
+        
+        oval1a.run(sequence)
+        oval1b.run(sequence2)
+        oval1c.run(sequence3)
+        
+        self.run(SKAction.wait(forDuration: 0.66)) {
+            
+            self.addChild(oval2a)
+            let rotate4 = SKAction.rotate(byAngle:CGFloat(randomRotate), duration:0)
+            let removeA = SKAction.removeFromParent()
+            let sequenceA = SKAction.sequence([rotate4,fadeIn,wait2,removeA])
+            
+            oval2a.run(sequenceA)
+            
+            self.addChild(oval2b)
+            let rotate5 = SKAction.rotate(byAngle:CGFloat(randomRotate2), duration:0)
+            let sequenceB = SKAction.sequence([rotate5,fadeIn,wait2,removeA])
+            
+            oval2b.run(sequenceB)
+            
+            self.addChild(oval2c)
+            let rotate6 = SKAction.rotate(byAngle:CGFloat(randomRotate3), duration:0)
+            let sequenceC = SKAction.sequence([rotate6,fadeIn,wait2,removeA])
+            
+            oval2c.run(sequenceC)
+            
+        }
+        
+        self.run(SKAction.wait(forDuration: 1.32)) {
+            
+            self.addChild(oval3a)
+            let rotate4 = SKAction.rotate(byAngle:CGFloat(randomRotate), duration:0)
+            let removeA = SKAction.removeFromParent()
+            let sequenceA = SKAction.sequence([rotate4,fadeIn,wait1,removeA])
+            
+            oval3a.run(sequenceA)
+            
+            self.addChild(oval3b)
+            let rotate5 = SKAction.rotate(byAngle:CGFloat(randomRotate2), duration:0)
+            let sequenceB = SKAction.sequence([rotate5,fadeIn,wait1,removeA])
+            
+            oval3b.run(sequenceB)
+            
+            self.addChild(oval3c)
+            let rotate6 = SKAction.rotate(byAngle:CGFloat(randomRotate3), duration:0)
+            let sequenceC = SKAction.sequence([rotate6,fadeIn,wait1,removeA])
+            
+            oval3c.run(sequenceC)
+            
+        }
+        
+        self.run(SKAction.wait(forDuration: 1.98)) {
+            
+            self.addChild(self.obHitBoxa)
             let rotate4 = SKAction.rotate(byAngle:CGFloat(randomRotate), duration:0)
             let spawnDelayA = SKAction.wait(forDuration: 2)
             let removeA = SKAction.removeFromParent()
             let sequenceA = SKAction.sequence([rotate4,spawnDelayA,removeA])
             
-            self.obOval1Real.run(sequenceA)
-        }
-        
-        self.run(SKAction.wait(forDuration: 2)) {
-            self.addChild(self.obOval2Real)
+            self.obHitBoxa.run(sequenceA)
+            
+            self.addChild(self.obHitBoxb)
             let rotate5 = SKAction.rotate(byAngle:CGFloat(randomRotate2), duration:0)
-            let spawnDelayA = SKAction.wait(forDuration: 2)
-            let removeA = SKAction.removeFromParent()
-            let sequenceA = SKAction.sequence([rotate5,spawnDelayA,removeA])
+            let sequenceB = SKAction.sequence([rotate5,spawnDelayA,removeA])
             
-            self.obOval2Real.run(sequenceA)
-        }
-        
-        self.run(SKAction.wait(forDuration: 2)) {
-            self.addChild(self.obOval3Real)
+            self.obHitBoxb.run(sequenceB)
+            
+            self.addChild(self.obHitBoxc)
             let rotate6 = SKAction.rotate(byAngle:CGFloat(randomRotate3), duration:0)
-            let spawnDelayA = SKAction.wait(forDuration: 2)
-            let removeA = SKAction.removeFromParent()
-            let sequenceA = SKAction.sequence([rotate6,spawnDelayA,removeA])
+            let sequenceC = SKAction.sequence([rotate6,spawnDelayA,removeA])
             
-            self.obOval3Real.run(sequenceA)
+            self.obHitBoxc.run(sequenceC)
+            
         }
         
-        addChild(obOval1Fade)
-        addChild(obOval2Fade)
-        addChild(obOval3Fade)
+        self.run(SKAction.wait(forDuration: 1.98)) {
+            
+            self.addChild(flicker1a)
+            let rotate4 = SKAction.rotate(byAngle:CGFloat(randomRotate), duration:0)
+            let spawnDelayA = SKAction.wait(forDuration: 2)
+            let removeA = SKAction.removeFromParent()
+            let sequenceA = SKAction.sequence([rotate4,spawnDelayA,removeA])
+            
+            flicker1a.run(sequenceA)
+            
+            self.addChild(flicker1b)
+            let rotate5 = SKAction.rotate(byAngle:CGFloat(randomRotate2), duration:0)
+            let sequenceB = SKAction.sequence([rotate5,spawnDelayA,removeA])
+            
+            flicker1b.run(sequenceB)
+            
+            self.addChild(flicker1c)
+            let rotate6 = SKAction.rotate(byAngle:CGFloat(randomRotate3), duration:0)
+            let sequenceC = SKAction.sequence([rotate6,spawnDelayA,removeA])
+            
+            flicker1c.run(sequenceC)
+            
+        }
         
-        obOval1Fade.run(sequence)
-        obOval2Fade.run(sequence2)
-        obOval3Fade.run(sequence3)
+        self.run(SKAction.wait(forDuration: 1.98)) {
+            
+            self.addChild(flicker2a)
+            let rotate4 = SKAction.rotate(byAngle:CGFloat(randomRotate), duration:0)
+            let removeA = SKAction.removeFromParent()
+            let fadeInFast = SKAction.fadeIn(withDuration: 0.33)
+            let fadeOutFast = SKAction.fadeOut(withDuration: 0.33)
+            let sequenceA = SKAction.sequence([rotate4,fadeOutFast,fadeInFast,fadeOutFast,fadeInFast,fadeOutFast,fadeInFast,removeA])
+            
+            flicker2a.run(sequenceA)
+            
+            self.addChild(flicker2b)
+            let rotate5 = SKAction.rotate(byAngle:CGFloat(randomRotate2), duration:0)
+            let sequenceB = SKAction.sequence([rotate5,fadeOutFast,fadeInFast,fadeOutFast,fadeInFast,fadeOutFast,fadeInFast,removeA])
+            
+            flicker2b.run(sequenceB)
+            
+            self.addChild(flicker2c)
+            let rotate6 = SKAction.rotate(byAngle:CGFloat(randomRotate3), duration:0)
+            let sequenceC = SKAction.sequence([rotate6,fadeOutFast,fadeInFast,fadeOutFast,fadeInFast,fadeOutFast,fadeInFast,removeA])
+            
+            flicker2c.run(sequenceC)
+            
+        }
         
         print("obstacle2")
-    
+        
     }
     
     func obstacle3() {
@@ -913,15 +1069,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         obRock3.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 300, height: 300))
         
         obRock1.physicsBody?.categoryBitMask = mediumDamageCategory
-        obRock1.physicsBody?.collisionBitMask = roarCatreogry
+        obRock1.physicsBody?.collisionBitMask = shieldCategory
         obRock1.physicsBody?.contactTestBitMask = bikerCategory
         
         obRock2.physicsBody?.categoryBitMask = mediumDamageCategory
-        obRock2.physicsBody?.collisionBitMask = roarCatreogry
+        obRock2.physicsBody?.collisionBitMask = shieldCategory
         obRock2.physicsBody?.contactTestBitMask = bikerCategory
         
         obRock3.physicsBody?.categoryBitMask = mediumDamageCategory
-        obRock3.physicsBody?.collisionBitMask = roarCatreogry
+        obRock3.physicsBody?.collisionBitMask = shieldCategory
         obRock3.physicsBody?.contactTestBitMask = bikerCategory
         
         obRock1.position = CGPoint(x: (CGFloat(player.position.x) + spawnXArray[randomSpawnX]), y: (CGFloat(player.position.y)) + CGFloat(randomY))
@@ -1094,7 +1250,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let moveShip4 = SKAction.move(to: ship4pos, duration: 2)
         let fireBullets = SKAction.run {self.bulletsFiring()}
         let wait = SKAction.wait(forDuration: 5)
-        let wait2 = SKAction.wait(forDuration: 0.3)
+        let wait2 = SKAction.wait(forDuration: 0.5)
         let flyAway1 = SKAction.move(to: CGPoint(x: 3*ship1pos.x, y: 3*ship1pos.y), duration: 2)
         let flyAway2 = SKAction.move(to: CGPoint(x: 3*ship2pos.x, y: 3*ship2pos.y), duration: 2)
         let flyAway3 = SKAction.move(to: CGPoint(x: 3*ship3pos.x, y: 3*ship3pos.y), duration: 2)
@@ -1109,7 +1265,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let sequence3 = SKAction.sequence(actionArray3)
         let sequence4 = SKAction.sequence(actionArray4)
         let sequenceFire = SKAction.sequence([wait2,fireBullets])
-        let fireAgain = SKAction.repeat(sequenceFire, count: 12)
+        let fireAgain = SKAction.repeat(sequenceFire, count: 8)
         
         obShip1.run(sequence)
         obShip2.run(sequence2)
@@ -1298,14 +1454,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
         }
 
-        
         print("obstacle5")
         
     }
     
     @objc func callObstacleArray() {
         let callNumber = arc4random_uniform(5)
-        //let callNumber = 4
+        //let callNumber = 1
         
         if callNumber == UInt32(0) {
             obstacle1()
@@ -1399,19 +1554,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         bullet1.physicsBody?.categoryBitMask = smallDamageCategory
-        bullet1.physicsBody?.collisionBitMask = roarCatreogry
+        bullet1.physicsBody?.collisionBitMask = shieldCategory
         bullet1.physicsBody?.contactTestBitMask = bikerCategory
         
         bullet2.physicsBody?.categoryBitMask = smallDamageCategory
-        bullet2.physicsBody?.collisionBitMask = roarCatreogry
+        bullet2.physicsBody?.collisionBitMask = shieldCategory
         bullet2.physicsBody?.contactTestBitMask = bikerCategory
         
         bullet3.physicsBody?.categoryBitMask = smallDamageCategory
-        bullet3.physicsBody?.collisionBitMask = roarCatreogry
+        bullet3.physicsBody?.collisionBitMask = shieldCategory
         bullet3.physicsBody?.contactTestBitMask = bikerCategory
         
         bullet4.physicsBody?.categoryBitMask = smallDamageCategory
-        bullet4.physicsBody?.collisionBitMask = roarCatreogry
+        bullet4.physicsBody?.collisionBitMask = shieldCategory
         bullet4.physicsBody?.contactTestBitMask = bikerCategory
         
     }
@@ -1436,6 +1591,63 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
     }
     
+    func makeShips() {
+        
+        let shipOne = SKSpriteNode(imageNamed: "ship")
+        let shipTwo = SKSpriteNode(imageNamed: "ship")
+        
+        shipOne.position = CGPoint(x: player.position.x + 200, y: player.position.y)
+        shipOne.size = CGSize(width: 150, height: 150)
+        shipOne.zPosition = 3
+        shipOne.physicsBody = SKPhysicsBody(texture: shipOne.texture!, size: shipOne.texture!.size())
+        shipOne.physicsBody?.categoryBitMask = smallShipCategory
+        shipOne.physicsBody?.collisionBitMask = 0
+        shipOne.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
+        
+        shipTwo.position = CGPoint(x: player.position.x - 200, y: player.position.y)
+        shipTwo.size = CGSize(width: 150, height: 150)
+        shipTwo.zPosition = 3
+        shipTwo.physicsBody = SKPhysicsBody(texture: shipTwo.texture!, size: shipTwo.texture!.size())
+        shipTwo.physicsBody?.categoryBitMask = smallShipCategory
+        shipTwo.physicsBody?.collisionBitMask = 0
+        shipTwo.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
+        
+        shipOne.physicsBody?.velocity = CGVector(dx: 200, dy: 200)
+        shipTwo.physicsBody?.velocity = CGVector(dx: -200, dy: 200)
+        
+        //let xDifference = abs(shipOne.position.x)
+        //print(xDifference)
+        
+        if abs(shipOne.position.x - player.position.x) > 300 {
+            shipOne.physicsBody?.applyImpulse(CGVector(dx: -(shipOne.position.x - player.position.x), dy: 0))
+        }
+        
+        if abs(shipTwo.position.x - player.position.x) > 300 {
+            shipTwo.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
+            //shipTwo.physicsBody?.applyImpulse(CGVector(dx: -(shipTwo.position.x - player.position.x), dy: 0))
+        }
+        
+        if abs(shipOne.position.y - player.position.y) > 400 {
+            shipOne.physicsBody?.applyImpulse(CGVector(dx: 0, dy: -(shipOne.position.y - player.position.y)))
+        }
+        
+        if abs(shipTwo.position.y - player.position.y) > 400 {
+            shipTwo.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
+            //shipTwo.physicsBody?.applyImpulse(CGVector(dx: 0, dy: -(shipTwo.position.y - player.position.y)))
+        }
+        
+        if shipsAlive == 0 && fiveSecondOn == true && sendShips == true {
+            fiveSecondOn = false
+            fiveSecondRunTime = 0
+            addChild(shipOne)
+            addChild(shipTwo)
+            shipsAlive = 2
+            print("ships")
+        }
+        
+        
+    }
+    
     func makeZapper() {
         
         zapper.strokeColor = .blue
@@ -1455,28 +1667,49 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
         }
         
-        return
+    }
+    
+    func vortexField() {
+        
+        let roarVortex = SKFieldNode.radialGravityField()
+        roarVortex.strength = -300.0
+        roarVortex.position = player.position
+        roarVortex.region = SKRegion(size: CGSize(width: 600, height: 600))
+        roarVortex.categoryBitMask = roarVortexCategory
+        roarVortex.isEnabled = true
+        
+        addChild(roarVortex)
+        
+        self.run(SKAction.wait(forDuration: 1)) {
+            roarVortex.removeFromParent()
+        }
         
     }
     
-    func makeRoar() {
-        //grow and contact
-        roar.zPosition = 6
-        roar.position = player.position
-        roar.size = CGSize(width: 500, height: 500)
-        roar.physicsBody = SKPhysicsBody(texture: roar.texture!, size: roar.texture!.size())
-        roar.physicsBody?.isDynamic = false
-        roar.physicsBody?.categoryBitMask = roarCatreogry
-        roar.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
-        roar.physicsBody?.collisionBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
+    func missileCallActive() {
         
-        addChild(roar)
+        let callDelaySprite = SKSpriteNode(imageNamed: "reticule")
+        callDelaySprite.size = CGSize(width: 10, height: 10)
+        callDelaySprite.position = CGPoint(x: player.position.x, y: player.position.y + 550)
+        let growCall = SKAction.resize(toWidth: 600, height: 600, duration: 1.5)
+        addChild(callDelaySprite)
+        callDelaySprite.run(growCall)
         
-        let growRoar = SKAction.resize(byWidth: 600, height: 600, duration: 0.5)
-        roar.run(growRoar)	
+        let landedSprite = SKShapeNode(circleOfRadius: 300)
+        landedSprite.fillColor = .red
+        landedSprite.position = callDelaySprite.position
+        landedSprite.physicsBody?.isDynamic = false
+        landedSprite.physicsBody = SKPhysicsBody.init(circleOfRadius: 300)
+        landedSprite.physicsBody?.categoryBitMask = missileCallCategory
+        landedSprite.physicsBody?.collisionBitMask = 0
+        landedSprite.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
         
-        self.run(SKAction.wait(forDuration:0.5)){
-            self.roar.removeFromParent()
+        self.run(SKAction.wait(forDuration: 1.5)) {
+            self.addChild(landedSprite)
+            callDelaySprite.removeFromParent()
+        }
+        self.run(SKAction.wait(forDuration: 2)) {
+            landedSprite.removeFromParent()
         }
         
     }
@@ -1516,15 +1749,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         if contactMedium == true{
-            currentHealth -= (10 - (resistUpNumber*bikerResistance))
+            currentHealth -= (25 - (resistUpNumber*bikerResistance))
             contactMedium = false
         }
+        
         
         if contactLarge == true{
             currentHealth -= (50 - (resistUpNumber*bikerResistance))
             contactLarge = false
         }
         
+        if contactOval == true{
+            currentHealth -= (10 - (resistUpNumber*bikerResistance))
+            contactOval = false
+            
+            self.run(SKAction.wait(forDuration: 0.33)) {
+                self.obHitBoxa.physicsBody?.categoryBitMask = self.obOvalCategory
+                self.obHitBoxb.physicsBody?.categoryBitMask = self.obOvalCategory
+                self.obHitBoxc.physicsBody?.categoryBitMask = self.obOvalCategory
+            }
+        }
+        
+        if smallShipContact == true{
+            shipsAlive -= 1
+            smallShipContact = false
+        }
         
         if bPuddle == true {
             if activeArray.count >= 1 {
@@ -1566,7 +1815,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func invulnerable() {
-        
         let invulnerable = SKAction.run {self.player.physicsBody?.collisionBitMask = 1; self.player.physicsBody?.categoryBitMask = 0}
         
         self.run(invulnerable)
@@ -1577,15 +1825,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.player.physicsBody?.categoryBitMask = self.bikerCategory
             
         }
-        
     }
     
     func abilityPositions() {
-        
         shield.position = player.position
         zapper.position = player.position
-        roar.position = player.position
-        
+        roarParticles?.position = player.position
     }
     
     func emitterPositions() {
@@ -1706,6 +1951,36 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             fiveSecondRunTime = 0
             zapperOn = false
             
+        case missileCallCategory | smallDamageCategory:
+            
+            contact.bodyB.node?.removeFromParent()
+            
+        case missileCallCategory | mediumDamageCategory:
+            
+            contact.bodyB.node?.removeFromParent()
+            
+        case missileCallCategory | largeDamageCategory:
+            
+            contact.bodyB.node?.removeFromParent()
+            
+        case smallShipCategory | smallDamageCategory:
+            
+            contact.bodyA.node?.removeFromParent()
+            contact.bodyB.node?.removeFromParent()
+            smallShipContact = true
+            
+        case smallShipCategory | mediumDamageCategory:
+            
+            contact.bodyA.node?.removeFromParent()
+            contact.bodyB.node?.removeFromParent()
+            smallShipContact = true
+            
+        case smallShipCategory | largeDamageCategory:
+            
+            contact.bodyA.node?.removeFromParent()
+            contact.bodyB.node?.removeFromParent()
+            smallShipContact = true
+            
         case bikerCategory | smallDamageCategory:
             
             contact.bodyB.node?.removeFromParent()
@@ -1720,6 +1995,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             contact.bodyB.node?.removeFromParent()
             contactLarge = true
+            
+        case bikerCategory | obOvalCategory:
+            
+            contactOval = true
+            obHitBoxa.physicsBody?.categoryBitMask = 0
+            obHitBoxb.physicsBody?.categoryBitMask = 0
+            obHitBoxc.physicsBody?.categoryBitMask = 0
             
         case zapperCategory | smallDamageCategory:
             
@@ -1745,7 +2027,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func bikerBuild() {
-        
         player.position = CGPoint(x: frame.size.width/2, y: frame.size.height/2)
         player.zPosition = 10
         player.size = CGSize(width: 300, height: 300)
@@ -1756,14 +2037,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.physicsBody?.categoryBitMask = bikerCategory
         player.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
         player.physicsBody?.collisionBitMask = 0
+        player.physicsBody?.fieldBitMask = 0
         player.physicsBody?.usesPreciseCollisionDetection = true
-        
-        createVortex()
-
-        //biker.lightingBitMask = 1
-        //biker.shadowCastBitMask = 0
-        //biker.shadowedBitMask = 1
-
+        player.lightingBitMask = 1
+        player.shadowCastBitMask = 0
+        player.shadowedBitMask = 1
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -1793,11 +2071,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 player.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
             }
             
-            if button.contains(location){
+            if button.contains(location) {
                 
                 if fiveSecondOn == true && roarOn == true{
                     fiveSecondRunTime = 0
-                    makeRoar()
+                    fiveSecondOn = false
+                    vortexField()
+                    roarEmitter()
+                    print("roar fire")
+                }
+                
+                if fiveSecondOn == true && missileCall == true{
+                    fiveSecondRunTime = 0
+                    fiveSecondOn = false
+                    missileCallActive()
+                    print("missile")
                 }
                 
                 if bombBoxOn == true && fiveSecondOn == true {
@@ -1815,15 +2103,28 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     
                 }
             }
-                if fiveSecondOn == true{
-                    if invulnerableOn == true{
+                if fiveSecondOn == true && invulnerableOn == true {
                         invulnerable()
                         fiveSecondRunTime = 0
                         fiveSecondOn = false
+                    
+                }
+                
+                if fiveSecondOn == true && speedBoostOn == true {
+                    
+                    player.physicsBody?.velocity = CGVector(dx: speedX + 600, dy: speedY + 600)
+                    fiveSecondRunTime = 0
+                    fiveSecondOn = false
+                    //might work?
+                    self.run(SKAction.wait(forDuration: 2)) {
+                        
+                        self.player.physicsBody?.velocity = CGVector(dx: speedX, dy: speedY)
                         
                     }
                 }
         }
+            
+            
         }
     }
     
