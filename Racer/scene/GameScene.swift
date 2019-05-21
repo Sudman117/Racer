@@ -16,7 +16,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let shield = SKShapeNode(circleOfRadius: 200)
     let zapper = SKShapeNode(circleOfRadius: 400)
     let button = SKShapeNode(rectOf: CGSize(width: 1080, height: 110))
-    let vortex = SKFieldNode.radialGravityField()
     
     let obOval1Fade = SKShapeNode(ellipseOf: CGSize(width: 1800, height: 200))
     let obOval1Real = SKShapeNode(ellipseOf: CGSize(width: 1800, height: 180))
@@ -109,7 +108,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let starfieldNode = SKSpriteNode(imageNamed: "starfield")
     let starfieldNode2 = SKSpriteNode(imageNamed: "starfield")
     let bombBox = SKSpriteNode(imageNamed: "reticule")
-    let vortexEmitter = SKEmitterNode(fileNamed: "vortex")
     
     var rect1 = SKSpriteNode()
     var rect2 = SKSpriteNode()
@@ -126,23 +124,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var threeSecondTimer:Timer!
     var fiveSecondTimer:Timer!
     var gameOver = false
-    
-    let bikerCategory:UInt32 = 1 << 1
-    let puddleCategory:UInt32 = 1 << 2
-    let speedCategory:UInt32 = 1 << 3
-    let resistCategory:UInt32 = 1 << 4
-    let healCategory:UInt32 = 1 << 5
-    let shieldCategory:UInt32 = 1 << 6
-    let bombCategory:UInt32 = 1 << 7
-    let zapperCategory:UInt32 = 1 << 8
-    let smallDamageCategory:UInt32 = 1 << 9
-    let mediumDamageCategory:UInt32 = 1 << 10
-    let largeDamageCategory:UInt32 = 1 << 11
-    let roarVortexCategory:UInt32 = 1 << 12
-    let missileCallCategory: UInt32 = 1 << 13
-    let smallShipCategory:UInt32 = 1 << 14
-    let obOvalCategory:UInt32 = 1 << 15
-    let vortexCategory:UInt32 = 1 << 16
+
     
     var activeArray = [String]()
     
@@ -184,8 +166,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         powerUpSpeed.physicsBody?.isDynamic = true
         powerUpSpeed.physicsBody?.linearDamping = 0
         
-        powerUpSpeed.physicsBody?.categoryBitMask = speedCategory
-        powerUpSpeed.physicsBody?.contactTestBitMask = bikerCategory
+        powerUpSpeed.physicsBody?.categoryBitMask = Category.speedCategory
+        powerUpSpeed.physicsBody?.contactTestBitMask = Category.bikerCategory
         powerUpSpeed.physicsBody?.collisionBitMask = 0
         
         self.addChild(powerUpSpeed)
@@ -210,8 +192,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         powerUpResist.physicsBody?.isDynamic = true
         powerUpResist.physicsBody?.linearDamping = 0
         
-        powerUpResist.physicsBody?.categoryBitMask = resistCategory
-        powerUpResist.physicsBody?.contactTestBitMask = bikerCategory
+        powerUpResist.physicsBody?.categoryBitMask = Category.resistCategory
+        powerUpResist.physicsBody?.contactTestBitMask = Category.bikerCategory
         powerUpResist.physicsBody?.collisionBitMask = 0
         
         self.addChild(powerUpResist)
@@ -237,8 +219,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         powerUpHeal.physicsBody?.isDynamic = true
         powerUpHeal.physicsBody?.linearDamping = 0
         
-        powerUpHeal.physicsBody?.categoryBitMask = healCategory
-        powerUpHeal.physicsBody?.contactTestBitMask = bikerCategory
+        powerUpHeal.physicsBody?.categoryBitMask = Category.healCategory
+        powerUpHeal.physicsBody?.contactTestBitMask = Category.bikerCategory
         powerUpHeal.physicsBody?.collisionBitMask = 0
         
         self.addChild(powerUpHeal)
@@ -355,7 +337,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             rect6.isHidden = false
         case [3,2,0]:
             //vortex ability
-            createVortex()
+            vortexActive = true
+            let vortex = Vortex(playerSprite: player)
+            vortex.execute()
             rect6.isHidden = false
         case [3,0,2]:
             player.size = CGSize(width: 200, height: 200)
@@ -404,22 +388,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             speedBoostOn = false
             missileCall = false
         }
-    }
-    
-    func createVortex() {
-        vortexActive = true
-        
-        vortex.isEnabled = true
-        vortex.strength = 200
-        vortex.categoryBitMask = vortexCategory
-        player.physicsBody?.fieldBitMask = 0
-        player.addChild(vortex)
-        player.addChild(vortexEmitter!)
-        
-        Timer.scheduledTimer(withTimeInterval: 30, repeats: false, block: { (Timer) in
-            self.vortex.isEnabled = false
-            self.vortexActive = false
-        })
     }
 
     @objc func updateArrayImage() {
@@ -550,8 +518,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         bombBox.physicsBody = SKPhysicsBody(texture: bombBox.texture!, size: bombBox.size)
         bombBox.position = CGPoint(x: frame.size.width/2, y: frame.size.height*(5.5/10))
-        bombBox.physicsBody?.categoryBitMask = bombCategory
-        bombBox.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
+        bombBox.physicsBody?.categoryBitMask = Category.bombCategory
+        bombBox.physicsBody?.contactTestBitMask = Category.smallDamageCategory | Category.mediumDamageCategory | Category.largeDamageCategory
         bombBox.physicsBody?.collisionBitMask = 0
         bombBox.isHidden = true
         addChild(bombBox)
@@ -647,8 +615,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         puddle.physicsBody?.isDynamic = true
         puddle.physicsBody?.linearDamping = 0
         
-        puddle.physicsBody?.categoryBitMask = puddleCategory
-        puddle.physicsBody?.contactTestBitMask = bikerCategory
+        puddle.physicsBody?.categoryBitMask = Category.puddleCategory
+        puddle.physicsBody?.contactTestBitMask = Category.bikerCategory
         puddle.physicsBody?.collisionBitMask = 0
         
         self.addChild(puddle)
@@ -682,23 +650,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         ob4Node.physicsBody = SKPhysicsBody(circleOfRadius: 100)
         ob5Node.physicsBody = SKPhysicsBody(circleOfRadius: 100)
         
-        ob1Node.physicsBody?.categoryBitMask = smallDamageCategory
-        ob2Node.physicsBody?.categoryBitMask = smallDamageCategory
-        ob3Node.physicsBody?.categoryBitMask = smallDamageCategory
-        ob4Node.physicsBody?.categoryBitMask = smallDamageCategory
-        ob5Node.physicsBody?.categoryBitMask = smallDamageCategory
+        ob1Node.physicsBody?.categoryBitMask = Category.smallDamageCategory
+        ob2Node.physicsBody?.categoryBitMask = Category.smallDamageCategory
+        ob3Node.physicsBody?.categoryBitMask = Category.smallDamageCategory
+        ob4Node.physicsBody?.categoryBitMask = Category.smallDamageCategory
+        ob5Node.physicsBody?.categoryBitMask = Category.smallDamageCategory
         
-        ob1Node.physicsBody?.collisionBitMask = shieldCategory
-        ob2Node.physicsBody?.collisionBitMask = shieldCategory
-        ob3Node.physicsBody?.collisionBitMask = shieldCategory
-        ob4Node.physicsBody?.collisionBitMask = shieldCategory
-        ob5Node.physicsBody?.collisionBitMask = shieldCategory
+        ob1Node.physicsBody?.collisionBitMask = Category.shieldCategory
+        ob2Node.physicsBody?.collisionBitMask = Category.shieldCategory
+        ob3Node.physicsBody?.collisionBitMask = Category.shieldCategory
+        ob4Node.physicsBody?.collisionBitMask = Category.shieldCategory
+        ob5Node.physicsBody?.collisionBitMask = Category.shieldCategory
         
-        ob1Node.physicsBody?.contactTestBitMask = bikerCategory
-        ob2Node.physicsBody?.contactTestBitMask = bikerCategory
-        ob3Node.physicsBody?.contactTestBitMask = bikerCategory
-        ob4Node.physicsBody?.contactTestBitMask = bikerCategory
-        ob5Node.physicsBody?.contactTestBitMask = bikerCategory
+        ob1Node.physicsBody?.contactTestBitMask = Category.bikerCategory
+        ob2Node.physicsBody?.contactTestBitMask = Category.bikerCategory
+        ob3Node.physicsBody?.contactTestBitMask = Category.bikerCategory
+        ob4Node.physicsBody?.contactTestBitMask = Category.bikerCategory
+        ob5Node.physicsBody?.contactTestBitMask = Category.bikerCategory
         
         ob1Node.fillColor = .yellow
         ob2Node.fillColor = .yellow
@@ -824,7 +792,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             randomX3 = Int(frame.size.width/2)
         }
         //add hitbox physics bodies
-        oval1a.position = CGPoint(x: Int(biker.position.x) + randomX, y: Int(biker.position.y) + randomY)
+        oval1a.position = CGPoint(x: Int(player.position.x) + randomX, y: Int(player.position.y) + randomY)
         oval1a.zPosition = -6
         oval1a.alpha = 0
         oval2a.position = oval1a.position
@@ -837,9 +805,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         obHitBoxa.zPosition = -7
         obHitBoxa.alpha = 0
         obHitBoxa.physicsBody = SKPhysicsBody(texture: obHitBoxa.texture!, size: obHitBoxa.texture!.size())
-        obHitBoxa.physicsBody?.categoryBitMask = obOvalCategory
+        obHitBoxa.physicsBody?.categoryBitMask = Category.obOvalCategory
         obHitBoxa.physicsBody?.collisionBitMask = 0
-        obHitBoxa.physicsBody?.contactTestBitMask = bikerCategory
+        obHitBoxa.physicsBody?.contactTestBitMask = Category.bikerCategory
         flicker1a.position = oval1a.position
         flicker1a.zPosition = -3
         flicker1a.alpha = 1
@@ -847,7 +815,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         flicker2a.zPosition = -2
         flicker2a.alpha = 1
         
-        oval1b.position = CGPoint(x: Int(biker.position.x) + randomX2, y: Int(biker.position.y) + randomY2)
+        oval1b.position = CGPoint(x: Int(player.position.x) + randomX2, y: Int(player.position.y) + randomY2)
         oval1b.zPosition = -6
         oval1b.alpha = 0
         oval2b.position = oval1b.position
@@ -860,9 +828,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         obHitBoxb.zPosition = -7
         obHitBoxb.alpha = 0
         obHitBoxb.physicsBody = SKPhysicsBody(texture: obHitBoxb.texture!, size: obHitBoxb.texture!.size())
-        obHitBoxb.physicsBody?.categoryBitMask = obOvalCategory
+        obHitBoxb.physicsBody?.categoryBitMask = Category.obOvalCategory
         obHitBoxb.physicsBody?.collisionBitMask = 0
-        obHitBoxb.physicsBody?.contactTestBitMask = bikerCategory
+        obHitBoxb.physicsBody?.contactTestBitMask = Category.bikerCategory
         flicker1b.position = oval1b.position
         flicker1b.zPosition = -3
         flicker1b.alpha = 1
@@ -870,7 +838,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         flicker2b.zPosition = -2
         flicker2b.alpha = 1
         
-        oval1c.position = CGPoint(x: Int(biker.position.x) + randomX3, y: Int(biker.position.y) + randomY3)
+        oval1c.position = CGPoint(x: Int(player.position.x) + randomX3, y: Int(player.position.y) + randomY3)
         oval1c.zPosition = -6
         oval1c.alpha = 0
         oval2c.position = oval1c.position
@@ -883,9 +851,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         obHitBoxc.zPosition = -7
         obHitBoxc.alpha = 0
         obHitBoxc.physicsBody = SKPhysicsBody(texture: obHitBoxc.texture!, size: obHitBoxc.texture!.size())
-        obHitBoxc.physicsBody?.categoryBitMask = obOvalCategory
+        obHitBoxc.physicsBody?.categoryBitMask = Category.obOvalCategory
         obHitBoxc.physicsBody?.collisionBitMask = 0
-        obHitBoxc.physicsBody?.contactTestBitMask = bikerCategory
+        obHitBoxc.physicsBody?.contactTestBitMask = Category.bikerCategory
         flicker1c.position = oval1c.position
         flicker1c.zPosition = -3
         flicker1c.alpha = 1
@@ -1068,17 +1036,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         obRock2.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 300, height: 300))
         obRock3.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 300, height: 300))
         
-        obRock1.physicsBody?.categoryBitMask = mediumDamageCategory
-        obRock1.physicsBody?.collisionBitMask = shieldCategory
-        obRock1.physicsBody?.contactTestBitMask = bikerCategory
+        obRock1.physicsBody?.categoryBitMask = Category.mediumDamageCategory
+        obRock1.physicsBody?.collisionBitMask = Category.shieldCategory
+        obRock1.physicsBody?.contactTestBitMask = Category.bikerCategory
         
-        obRock2.physicsBody?.categoryBitMask = mediumDamageCategory
-        obRock2.physicsBody?.collisionBitMask = shieldCategory
-        obRock2.physicsBody?.contactTestBitMask = bikerCategory
+        obRock2.physicsBody?.categoryBitMask = Category.mediumDamageCategory
+        obRock2.physicsBody?.collisionBitMask = Category.shieldCategory
+        obRock2.physicsBody?.contactTestBitMask = Category.bikerCategory
         
-        obRock3.physicsBody?.categoryBitMask = mediumDamageCategory
-        obRock3.physicsBody?.collisionBitMask = shieldCategory
-        obRock3.physicsBody?.contactTestBitMask = bikerCategory
+        obRock3.physicsBody?.categoryBitMask = Category.mediumDamageCategory
+        obRock3.physicsBody?.collisionBitMask = Category.shieldCategory
+        obRock3.physicsBody?.contactTestBitMask = Category.bikerCategory
         
         obRock1.position = CGPoint(x: (CGFloat(player.position.x) + spawnXArray[randomSpawnX]), y: (CGFloat(player.position.y)) + CGFloat(randomY))
         obRock2.position = CGPoint(x: (CGFloat(player.position.x) + spawnXArray2[randomSpawnX2]), y: (CGFloat(player.position.y)) + CGFloat(randomY2))
@@ -1328,31 +1296,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         obLanded1.fillColor = .red
         obLanded1.position = obShadow1.position
         obLanded1.physicsBody = SKPhysicsBody(circleOfRadius: 150)
-        obLanded1.physicsBody?.categoryBitMask = largeDamageCategory
+        obLanded1.physicsBody?.categoryBitMask = Category.largeDamageCategory
         obLanded1.physicsBody?.collisionBitMask = 0
-        obLanded1.physicsBody?.contactTestBitMask = bikerCategory
+        obLanded1.physicsBody?.contactTestBitMask = Category.bikerCategory
         
         
         obLanded2.fillColor = .red
         obLanded2.position = obShadow2.position
         obLanded2.physicsBody = SKPhysicsBody(circleOfRadius: 150)
-        obLanded2.physicsBody?.categoryBitMask = largeDamageCategory
+        obLanded2.physicsBody?.categoryBitMask = Category.largeDamageCategory
         obLanded2.physicsBody?.collisionBitMask = 0
-        obLanded2.physicsBody?.contactTestBitMask = bikerCategory
+        obLanded2.physicsBody?.contactTestBitMask = Category.bikerCategory
         
         obLanded3.fillColor = .red
         obLanded3.position = obShadow3.position
         obLanded3.physicsBody = SKPhysicsBody(circleOfRadius: 150)
-        obLanded3.physicsBody?.categoryBitMask = largeDamageCategory
+        obLanded3.physicsBody?.categoryBitMask = Category.largeDamageCategory
         obLanded3.physicsBody?.collisionBitMask = 0
-        obLanded3.physicsBody?.contactTestBitMask = bikerCategory
+        obLanded3.physicsBody?.contactTestBitMask = Category.bikerCategory
         
         obLanded4.fillColor = .red
         obLanded4.position = obShadow4.position
         obLanded4.physicsBody = SKPhysicsBody(circleOfRadius: 150)
-        obLanded4.physicsBody?.categoryBitMask = largeDamageCategory
+        obLanded4.physicsBody?.categoryBitMask = Category.largeDamageCategory
         obLanded4.physicsBody?.collisionBitMask = 0
-        obLanded4.physicsBody?.contactTestBitMask = bikerCategory
+        obLanded4.physicsBody?.contactTestBitMask = Category.bikerCategory
         
         self.run(SKAction.wait(forDuration: TimeInterval(randomSpawnTime1))) {
             
@@ -1553,21 +1521,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             bullet4.removeFromParent()
         }
         
-        bullet1.physicsBody?.categoryBitMask = smallDamageCategory
-        bullet1.physicsBody?.collisionBitMask = shieldCategory
-        bullet1.physicsBody?.contactTestBitMask = bikerCategory
+        bullet1.physicsBody?.categoryBitMask = Category.smallDamageCategory
+        bullet1.physicsBody?.collisionBitMask = Category.shieldCategory
+        bullet1.physicsBody?.contactTestBitMask = Category.bikerCategory
         
-        bullet2.physicsBody?.categoryBitMask = smallDamageCategory
-        bullet2.physicsBody?.collisionBitMask = shieldCategory
-        bullet2.physicsBody?.contactTestBitMask = bikerCategory
+        bullet2.physicsBody?.categoryBitMask = Category.smallDamageCategory
+        bullet2.physicsBody?.collisionBitMask = Category.shieldCategory
+        bullet2.physicsBody?.contactTestBitMask = Category.bikerCategory
         
-        bullet3.physicsBody?.categoryBitMask = smallDamageCategory
-        bullet3.physicsBody?.collisionBitMask = shieldCategory
-        bullet3.physicsBody?.contactTestBitMask = bikerCategory
+        bullet3.physicsBody?.categoryBitMask = Category.smallDamageCategory
+        bullet3.physicsBody?.collisionBitMask = Category.shieldCategory
+        bullet3.physicsBody?.contactTestBitMask = Category.bikerCategory
         
-        bullet4.physicsBody?.categoryBitMask = smallDamageCategory
-        bullet4.physicsBody?.collisionBitMask = shieldCategory
-        bullet4.physicsBody?.contactTestBitMask = bikerCategory
+        bullet4.physicsBody?.categoryBitMask = Category.smallDamageCategory
+        bullet4.physicsBody?.collisionBitMask = Category.shieldCategory
+        bullet4.physicsBody?.contactTestBitMask = Category.bikerCategory
         
     }
     
@@ -1580,8 +1548,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         shield.position = player.position
         shield.physicsBody = SKPhysicsBody(circleOfRadius: 200)
         shield.physicsBody?.isDynamic = true
-        shield.physicsBody?.categoryBitMask = shieldCategory
-        shield.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
+        shield.physicsBody?.categoryBitMask = Category.shieldCategory
+        shield.physicsBody?.contactTestBitMask = Category.smallDamageCategory | Category.mediumDamageCategory | Category.largeDamageCategory
         shield.physicsBody?.collisionBitMask = 0
         
         if fiveSecondOn == true && shieldOn == false{
@@ -1600,17 +1568,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         shipOne.size = CGSize(width: 150, height: 150)
         shipOne.zPosition = 3
         shipOne.physicsBody = SKPhysicsBody(texture: shipOne.texture!, size: shipOne.texture!.size())
-        shipOne.physicsBody?.categoryBitMask = smallShipCategory
+        shipOne.physicsBody?.categoryBitMask = Category.smallShipCategory
         shipOne.physicsBody?.collisionBitMask = 0
-        shipOne.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
+        shipOne.physicsBody?.contactTestBitMask = Category.smallDamageCategory | Category.mediumDamageCategory | Category.largeDamageCategory
         
         shipTwo.position = CGPoint(x: player.position.x - 200, y: player.position.y)
         shipTwo.size = CGSize(width: 150, height: 150)
         shipTwo.zPosition = 3
         shipTwo.physicsBody = SKPhysicsBody(texture: shipTwo.texture!, size: shipTwo.texture!.size())
-        shipTwo.physicsBody?.categoryBitMask = smallShipCategory
+        shipTwo.physicsBody?.categoryBitMask = Category.smallShipCategory
         shipTwo.physicsBody?.collisionBitMask = 0
-        shipTwo.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
+        shipTwo.physicsBody?.contactTestBitMask = Category.smallDamageCategory | Category.mediumDamageCategory | Category.largeDamageCategory
         
         shipOne.physicsBody?.velocity = CGVector(dx: 200, dy: 200)
         shipTwo.physicsBody?.velocity = CGVector(dx: -200, dy: 200)
@@ -1657,8 +1625,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         zapper.position = player.position
         zapper.physicsBody = SKPhysicsBody(circleOfRadius: 400)
         zapper.physicsBody?.isDynamic = true
-        zapper.physicsBody?.categoryBitMask = zapperCategory
-        zapper.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
+        zapper.physicsBody?.categoryBitMask = Category.zapperCategory
+        zapper.physicsBody?.contactTestBitMask = Category.smallDamageCategory | Category.mediumDamageCategory | Category.largeDamageCategory
         zapper.physicsBody?.collisionBitMask = 0
         
         if fiveSecondOn == true && zapperOn == false{
@@ -1675,7 +1643,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         roarVortex.strength = -300.0
         roarVortex.position = player.position
         roarVortex.region = SKRegion(size: CGSize(width: 600, height: 600))
-        roarVortex.categoryBitMask = roarVortexCategory
+        roarVortex.categoryBitMask = Category.roarVortexCategory
         roarVortex.isEnabled = true
         
         addChild(roarVortex)
@@ -1700,9 +1668,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         landedSprite.position = callDelaySprite.position
         landedSprite.physicsBody?.isDynamic = false
         landedSprite.physicsBody = SKPhysicsBody.init(circleOfRadius: 300)
-        landedSprite.physicsBody?.categoryBitMask = missileCallCategory
+        landedSprite.physicsBody?.categoryBitMask = Category.missileCallCategory
         landedSprite.physicsBody?.collisionBitMask = 0
-        landedSprite.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
+        landedSprite.physicsBody?.contactTestBitMask = Category.smallDamageCategory | Category.mediumDamageCategory | Category.largeDamageCategory
         
         self.run(SKAction.wait(forDuration: 1.5)) {
             self.addChild(landedSprite)
@@ -1736,7 +1704,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         
         self.run(SKAction.wait(forDuration: 1)) {
-            self.player.physicsBody?.categoryBitMask = self.bikerCategory
+            self.player.physicsBody?.categoryBitMask = Category.bikerCategory
             self.player.alpha = 1.0
         }
     }
@@ -1764,9 +1732,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             contactOval = false
             
             self.run(SKAction.wait(forDuration: 0.33)) {
-                self.obHitBoxa.physicsBody?.categoryBitMask = self.obOvalCategory
-                self.obHitBoxb.physicsBody?.categoryBitMask = self.obOvalCategory
-                self.obHitBoxc.physicsBody?.categoryBitMask = self.obOvalCategory
+                self.obHitBoxa.physicsBody?.categoryBitMask = Category.obOvalCategory
+                self.obHitBoxb.physicsBody?.categoryBitMask = Category.obOvalCategory
+                self.obHitBoxc.physicsBody?.categoryBitMask = Category.obOvalCategory
             }
         }
         
@@ -1822,7 +1790,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.run(SKAction.wait(forDuration: 2)) {
             
             self.player.physicsBody?.collisionBitMask = 0
-            self.player.physicsBody?.categoryBitMask = self.bikerCategory
+            self.player.physicsBody?.categoryBitMask = Category.bikerCategory
             
         }
     }
@@ -1915,27 +1883,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         switch contactMask {
             
-        case bikerCategory | puddleCategory:
+        case Category.bikerCategory | Category.puddleCategory:
 
             contact.bodyB.node?.removeFromParent()
             bPuddle = true
             
-        case bikerCategory | speedCategory:
+        case Category.bikerCategory | Category.speedCategory:
  
             contact.bodyB.node?.removeFromParent()
             bSpeed = true
             
-        case bikerCategory | resistCategory:
+        case Category.bikerCategory | Category.resistCategory:
  
             contact.bodyB.node?.removeFromParent()
             bResist = true
             
-        case bikerCategory | healCategory:
+        case Category.bikerCategory | Category.healCategory:
 
             contact.bodyB.node?.removeFromParent()
             bHeal = true
             
-        case shieldCategory | smallDamageCategory:
+        case Category.shieldCategory | Category.smallDamageCategory:
             
             contact.bodyA.node?.removeFromParent()
             contact.bodyB.node?.removeFromParent()
@@ -1943,7 +1911,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             fiveSecondRunTime = 0
             shieldOn = false
             
-        case zapperCategory | smallDamageCategory:
+        case Category.zapperCategory | Category.smallDamageCategory:
             
             contact.bodyA.node?.removeFromParent()
             contact.bodyB.node?.removeFromParent()
@@ -1951,59 +1919,59 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             fiveSecondRunTime = 0
             zapperOn = false
             
-        case missileCallCategory | smallDamageCategory:
+        case Category.missileCallCategory | Category.smallDamageCategory:
             
             contact.bodyB.node?.removeFromParent()
             
-        case missileCallCategory | mediumDamageCategory:
+        case Category.missileCallCategory | Category.mediumDamageCategory:
             
             contact.bodyB.node?.removeFromParent()
             
-        case missileCallCategory | largeDamageCategory:
+        case Category.missileCallCategory | Category.largeDamageCategory:
             
             contact.bodyB.node?.removeFromParent()
             
-        case smallShipCategory | smallDamageCategory:
+        case Category.smallShipCategory | Category.smallDamageCategory:
             
             contact.bodyA.node?.removeFromParent()
             contact.bodyB.node?.removeFromParent()
             smallShipContact = true
             
-        case smallShipCategory | mediumDamageCategory:
+        case Category.smallShipCategory | Category.mediumDamageCategory:
             
             contact.bodyA.node?.removeFromParent()
             contact.bodyB.node?.removeFromParent()
             smallShipContact = true
             
-        case smallShipCategory | largeDamageCategory:
+        case Category.smallShipCategory | Category.largeDamageCategory:
             
             contact.bodyA.node?.removeFromParent()
             contact.bodyB.node?.removeFromParent()
             smallShipContact = true
             
-        case bikerCategory | smallDamageCategory:
+        case Category.bikerCategory | Category.smallDamageCategory:
             
             contact.bodyB.node?.removeFromParent()
             contactSmall = true
             
-        case bikerCategory | mediumDamageCategory:
+        case Category.bikerCategory | Category.mediumDamageCategory:
             
             contact.bodyB.node?.removeFromParent()
             contactMedium = true
             
-        case bikerCategory | largeDamageCategory:
+        case Category.bikerCategory | Category.largeDamageCategory:
             
             contact.bodyB.node?.removeFromParent()
             contactLarge = true
             
-        case bikerCategory | obOvalCategory:
+        case Category.bikerCategory | Category.obOvalCategory:
             
             contactOval = true
             obHitBoxa.physicsBody?.categoryBitMask = 0
             obHitBoxb.physicsBody?.categoryBitMask = 0
             obHitBoxc.physicsBody?.categoryBitMask = 0
             
-        case zapperCategory | smallDamageCategory:
+        case Category.zapperCategory | Category.smallDamageCategory:
             
             contact.bodyA.node?.removeFromParent()
             contact.bodyB.node?.removeFromParent()
@@ -2033,9 +2001,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.physicsBody = SKPhysicsBody(texture: player.texture!, size: player.texture!.size())
         player.physicsBody?.affectedByGravity = false
         player.physicsBody?.isDynamic = true
-        player.name = "BIKER"
-        player.physicsBody?.categoryBitMask = bikerCategory
-        player.physicsBody?.contactTestBitMask = smallDamageCategory | mediumDamageCategory | largeDamageCategory
+        player.name = "player"
+        player.physicsBody?.categoryBitMask = Category.bikerCategory
+        player.physicsBody?.contactTestBitMask = Category.smallDamageCategory | Category.mediumDamageCategory | Category.largeDamageCategory
         player.physicsBody?.collisionBitMask = 0
         player.physicsBody?.fieldBitMask = 0
         player.physicsBody?.usesPreciseCollisionDetection = true

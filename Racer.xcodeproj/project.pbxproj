@@ -24,6 +24,9 @@
 		E90B9BB12127A2DD0005F813 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E90B9BAF2127A2DD0005F813 /* LaunchScreen.storyboard */; };
 		E90B9BBC2127A2DD0005F813 /* RacerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90B9BBB2127A2DD0005F813 /* RacerTests.swift */; };
 		E90B9BC72127A2DD0005F813 /* RacerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90B9BC62127A2DD0005F813 /* RacerUITests.swift */; };
+		E91A82FF228CDE53000F2987 /* Ability.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91A82FE228CDE53000F2987 /* Ability.swift */; };
+		E91A8301228CDE69000F2987 /* Vortex.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91A8300228CDE69000F2987 /* Vortex.swift */; };
+		E91EECDF22937D5D0052EEE8 /* Categories.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91EECDE22937D5D0052EEE8 /* Categories.swift */; };
 		E933CD24228112EF002E3CBA /* vortex.sks in Resources */ = {isa = PBXBuildFile; fileRef = E933CD23228112EF002E3CBA /* vortex.sks */; };
 /* End PBXBuildFile section */
 
@@ -68,6 +71,9 @@
 		E90B9BC22127A2DD0005F813 /* RacerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RacerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E90B9BC62127A2DD0005F813 /* RacerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RacerUITests.swift; sourceTree = "<group>"; };
 		E90B9BC82127A2DD0005F813 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E91A82FE228CDE53000F2987 /* Ability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ability.swift; sourceTree = "<group>"; };
+		E91A8300228CDE69000F2987 /* Vortex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vortex.swift; sourceTree = "<group>"; };
+		E91EECDE22937D5D0052EEE8 /* Categories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Categories.swift; sourceTree = "<group>"; };
 		E933CD23228112EF002E3CBA /* vortex.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = vortex.sks; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -134,11 +140,12 @@
 		E90B9B9F2127A2DA0005F813 /* Racer */ = {
 			isa = PBXGroup;
 			children = (
+				E91EECDD22937D3C0052EEE8 /* defs */,
+				E91A82FA228BA253000F2987 /* abilities */,
+				E91A82F9228BA235000F2987 /* scene */,
 				E90B9BA02127A2DA0005F813 /* AppDelegate.swift */,
 				E90B9BA22127A2DA0005F813 /* GameScene.sks */,
 				E90B9BA42127A2DA0005F813 /* Actions.sks */,
-				E90B9BA62127A2DA0005F813 /* GameScene.swift */,
-				E90B9BA82127A2DA0005F813 /* GameViewController.swift */,
 				E90B9BAA2127A2DA0005F813 /* Main.storyboard */,
 				E90B9BAD2127A2DD0005F813 /* Assets.xcassets */,
 				E90B9BAF2127A2DD0005F813 /* LaunchScreen.storyboard */,
@@ -164,6 +171,32 @@
 				E90B9BC82127A2DD0005F813 /* Info.plist */,
 			);
 			path = RacerUITests;
+			sourceTree = "<group>";
+		};
+		E91A82F9228BA235000F2987 /* scene */ = {
+			isa = PBXGroup;
+			children = (
+				E90B9BA82127A2DA0005F813 /* GameViewController.swift */,
+				E90B9BA62127A2DA0005F813 /* GameScene.swift */,
+			);
+			path = scene;
+			sourceTree = "<group>";
+		};
+		E91A82FA228BA253000F2987 /* abilities */ = {
+			isa = PBXGroup;
+			children = (
+				E91A82FE228CDE53000F2987 /* Ability.swift */,
+				E91A8300228CDE69000F2987 /* Vortex.swift */,
+			);
+			path = abilities;
+			sourceTree = "<group>";
+		};
+		E91EECDD22937D3C0052EEE8 /* defs */ = {
+			isa = PBXGroup;
+			children = (
+				E91EECDE22937D5D0052EEE8 /* Categories.swift */,
+			);
+			path = defs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -312,7 +345,10 @@
 			files = (
 				E90B9BA72127A2DA0005F813 /* GameScene.swift in Sources */,
 				E90B9BA92127A2DA0005F813 /* GameViewController.swift in Sources */,
+				E91A8301228CDE69000F2987 /* Vortex.swift in Sources */,
+				E91A82FF228CDE53000F2987 /* Ability.swift in Sources */,
 				E90B9BA12127A2DA0005F813 /* AppDelegate.swift in Sources */,
+				E91EECDF22937D5D0052EEE8 /* Categories.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
